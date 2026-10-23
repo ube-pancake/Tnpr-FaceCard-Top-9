@@ -13,7 +13,7 @@ Create a production build with `npm run build`. The repository deploys to GitHub
 
 ## Characters
 
-The roster lives in `src/data.js`. `ACTIVE_TEAMS` limits which teams are included (currently `['seigaku']`); set it to `null` to use every team.
+The roster lives in `src/data.js`. `ACTIVE_TEAMS` limits which teams are included (currently the nine school teams; U-17, foreign teams and others come later). Set it to `null` to use every team. On the start screen, players can sort all included teams or pick a single team.
 
 ## Character portraits
 

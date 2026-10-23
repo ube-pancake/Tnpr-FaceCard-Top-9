@@ -107,8 +107,10 @@ const japaneseNames = {
 
 const slugify = (value) => value.toLowerCase().replace(/[.']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
-// Teams to include. Set to null to use the full roster (currently limited to Seigaku for testing).
-const ACTIVE_TEAMS = ['seigaku']
+// Teams to include. Set to null to use the full roster (U-17, foreign teams and others come later).
+const ACTIVE_TEAMS = ['seigaku', 'fudomine', 'rudolph', 'yamabuki', 'hyoutei', 'rokkaku', 'rikkai', 'higa', 'shiten']
+
+export const activeSchools = schools.filter((school) => !ACTIVE_TEAMS || ACTIVE_TEAMS.includes(school.id))
 
 export const players = Object.entries(roster).filter(([schoolId]) => !ACTIVE_TEAMS || ACTIVE_TEAMS.includes(schoolId)).flatMap(([schoolId, names]) =>
   names.map((name, index) => ({

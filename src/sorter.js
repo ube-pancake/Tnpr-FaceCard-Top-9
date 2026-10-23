@@ -16,7 +16,7 @@ const shuffle = (items) => {
 const settle = (state, ids) => {
   let { round, next, index, ranked, lostTo, picks } = state
   for (;;) {
-    if (ranked.length >= TOP_COUNT) return { round, next, index, ranked, lostTo, picks, done: true }
+    if (ranked.length >= Math.min(TOP_COUNT, ids.length)) return { round, next, index, ranked, lostTo, picks, done: true }
     if (index >= round.length) {
       if (next.length === 1) {
         ranked = [...ranked, next[0]]

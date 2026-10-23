@@ -1,15 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { players, schoolMap } from './data.js'
+import { activeSchools, players, schoolMap } from './data.js'
 import { TOP_COUNT, choose, currentPair, progress, startSort } from './sorter.js'
 
-const ids = players.map((player) => player.id)
 const playerMap = Object.fromEntries(players.map((player) => [player.id, player]))
 const SAVE_KEY = 'favorite-faces-top9'
+const ALL = 'all'
+
+const playersFor = (team) => players.filter((player) => team === ALL || player.schoolId === team)
+const idsFor = (team) => playersFor(team).map((player) => player.id)
+const teamLabel = (team) => (team === ALL ? 'All teams' : schoolMap[team].name)
 
 const loadSaved = () => {
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY))
-    if (saved?.history?.length && saved.history.every((state) => state.lostTo)) return saved
+    const validTeam = saved?.team === ALL || activeSchools.some((school) => school.id === saved?.team)
+    if (validTeam && saved.history?.length && saved.history.every((state) => state.lostTo && state.round.every((id) => playerMap[id]))) return saved
   } catch {
     // ignore unreadable save data
   }
@@ -40,26 +45,48 @@ function Portrait({ player, className = '' }) {
   )
 }
 
-function Intro({ onStart, onResume }) {
-  const preview = useMemo(() => [...players].sort(() => Math.random() - 0.5).slice(0, 9), [])
+function Intro({ onStart, resumeTeam, onResume }) {
+  const [team, setTeam] = useState(ALL)
+  const pool = playersFor(team)
+  const preview = useMemo(() => [...playersFor(team)].sort(() => Math.random() - 0.5).slice(0, 9), [team])
+  const topCount = Math.min(TOP_COUNT, pool.length)
+  const options = [{ id: ALL, name: 'All teams', color: null }, ...activeSchools]
+
   return (
     <main className="screen intro">
-      <p className="eyebrow">TeniPuri Top9</p>
-      <h1>Favorite faces <span className="accent">Top 9</span></h1>
-      <p className="sub">Compare photos and pick the face you like best.</p>
-      <div className="grid3 preview">
-        {preview.map((player) => <Portrait key={player.id} player={player} />)}
-      </div>
-      <p className="count">Your Top 9 from {players.length} characters.</p>
-      <button className="primary" onClick={onStart}>Start →</button>
-      {onResume && <button className="link" onClick={onResume}>Resume where I left off</button>}
+      <nav className="teams" aria-label="Choose a team">
+        <p className="teams-title">Sort by team</p>
+        {options.map((option) => (
+          <button
+            key={option.id}
+            className={`team${team === option.id ? ' active' : ''}`}
+            aria-pressed={team === option.id}
+            onClick={() => setTeam(option.id)}
+          >
+            <i style={{ background: option.color || 'linear-gradient(135deg, var(--violet), var(--pink))' }} />
+            <span>{option.name}</span>
+            <small>{playersFor(option.id).length}</small>
+          </button>
+        ))}
+      </nav>
+      <section className="intro-main">
+        <p className="eyebrow">TeniPuri Top9{team !== ALL && ` · ${teamLabel(team)}`}</p>
+        <h1>Favorite faces <span className="accent">Top {topCount}</span></h1>
+        <p className="sub">Compare photos and pick the face you like best.</p>
+        <div className="grid3 preview">
+          {preview.map((player) => <Portrait key={player.id} player={player} />)}
+        </div>
+        <p className="count">Your Top {topCount} from {pool.length} characters{team !== ALL && ` in ${teamLabel(team)}`}.</p>
+        <button className="primary" onClick={() => onStart(team)}>Start →</button>
+        {onResume && <button className="link" onClick={onResume}>Resume where I left off ({teamLabel(resumeTeam)})</button>}
+      </section>
     </main>
   )
 }
 
-function Matchup({ state, history, onPick, onBack }) {
+function Matchup({ state, history, count, onPick, onBack }) {
   const pair = currentPair(state)
-  const percent = progress(state, players.length)
+  const percent = progress(state, count)
 
   useEffect(() => {
     const onKey = (event) => {
@@ -109,10 +136,15 @@ const loadPortrait = (player) => new Promise((resolve) => {
   tryLoad(0)
 })
 
-function Result({ ranked, onRestart }) {
+function Result({ ranked, team, onRestart }) {
   const canvasRef = useRef(null)
   const [notice, setNotice] = useState('')
-  const cells = GRID_ORDER.filter((rank) => rank < ranked.length).map((rank) => ({ rank, player: playerMap[ranked[rank]] }))
+  // Smaller teams can't fill the 3×3 layout, so they're shown in plain rank order.
+  const order = ranked.length >= GRID_ORDER.length ? GRID_ORDER : ranked.map((_, rank) => rank)
+  const cells = order.map((rank) => ({ rank, player: playerMap[ranked[rank]] }))
+  const rows = Math.ceil(cells.length / 3)
+  const heading = `Top ${ranked.length}`
+  const subtitle = team === ALL ? 'TeniPuri Top9' : `TeniPuri Top9 · ${teamLabel(team)}`
 
   const saveImage = async () => {
     const size = 360
@@ -122,7 +154,7 @@ function Result({ ranked, onRestart }) {
     const top = 190
     const canvas = canvasRef.current
     canvas.width = pad * 2 + size * 3 + gap * 2
-    canvas.height = top + (size + label + gap) * 3 + 40
+    canvas.height = top + (size + label + gap) * rows + 40
     const ctx = canvas.getContext('2d')
     const gradient = (x, y, w, h) => {
       const fill = ctx.createLinearGradient(x, y, x + w, y + h)
@@ -135,9 +167,9 @@ function Result({ ranked, onRestart }) {
     ctx.textAlign = 'center'
     ctx.fillStyle = '#16161d'
     ctx.font = '700 34px sans-serif'
-    ctx.fillText('TeniPuri Top9', canvas.width / 2, 72)
+    ctx.fillText(subtitle, canvas.width / 2, 72)
     ctx.font = '800 60px sans-serif'
-    ctx.fillText('My favorite faces TOP 9', canvas.width / 2, 145)
+    ctx.fillText(`My favorite faces ${heading.toUpperCase()}`, canvas.width / 2, 145)
 
     const images = await Promise.all(cells.map(({ player }) => loadPortrait(player)))
     cells.forEach(({ rank, player }, i) => {
@@ -192,7 +224,7 @@ function Result({ ranked, onRestart }) {
     })
 
     const link = document.createElement('a')
-    link.download = 'my-top-9.png'
+    link.download = `my-top-${ranked.length}${team === ALL ? '' : `-${team}`}.png`
     link.href = canvas.toDataURL('image/png')
     link.click()
     setNotice('Image saved')
@@ -200,8 +232,8 @@ function Result({ ranked, onRestart }) {
 
   return (
     <main className="screen">
-      <p className="eyebrow">Your result</p>
-      <h1>My favorite faces <span className="accent">Top 9</span></h1>
+      <p className="eyebrow">Your result{team !== ALL && ` · ${teamLabel(team)}`}</p>
+      <h1>My favorite faces <span className="accent">{heading}</span></h1>
       <div className="grid3 result">
         {cells.map(({ rank, player }) => (
           <figure key={player.id} className={rank === 0 ? 'first' : ''}>
@@ -222,7 +254,7 @@ function Result({ ranked, onRestart }) {
       </div>
       <p className="notice" role="status">{notice}</p>
       <section className="ranking">
-        <h2>TOP 9</h2>
+        <h2>{heading.toUpperCase()}</h2>
         <ol>
           {ranked.map((id, i) => {
             const player = playerMap[id]
@@ -244,26 +276,41 @@ function Result({ ranked, onRestart }) {
 }
 
 export default function App() {
-  const [history, setHistory] = useState(null)
-  const [saved] = useState(loadSaved)
+  const [session, setSession] = useState(null)
+  const [saved, setSaved] = useState(loadSaved)
+  const history = session?.history
   const state = history?.[history.length - 1]
+  const ids = useMemo(() => (session ? idsFor(session.team) : []), [session?.team])
 
   useEffect(() => {
     try {
-      if (!history) return
+      if (!session) return
       if (state.done) localStorage.removeItem(SAVE_KEY)
-      else localStorage.setItem(SAVE_KEY, JSON.stringify({ history }))
+      else localStorage.setItem(SAVE_KEY, JSON.stringify(session))
     } catch {
       // storage unavailable
     }
-  }, [history, state])
+  }, [session, state])
 
-  const pick = (side) => setHistory((current) => {
+  const updateHistory = (update) => setSession((current) => ({ ...current, history: update(current.history) }))
+  const pick = (side) => updateHistory((current) => {
     const latest = current[current.length - 1]
     return latest.done ? current : [...current, choose(latest, ids, side)]
   })
+  const restart = () => {
+    setSaved(loadSaved())
+    setSession(null)
+  }
 
-  if (!history) return <Intro onStart={() => setHistory([startSort(ids)])} onResume={saved ? () => setHistory(saved.history) : null} />
-  if (state.done) return <Result ranked={state.ranked.slice(0, TOP_COUNT)} onRestart={() => setHistory(null)} />
-  return <Matchup state={state} history={history} onPick={pick} onBack={() => setHistory((current) => current.slice(0, -1))} />
+  if (!session) {
+    return (
+      <Intro
+        onStart={(team) => setSession({ team, history: [startSort(idsFor(team))] })}
+        resumeTeam={saved?.team}
+        onResume={saved ? () => setSession(saved) : null}
+      />
+    )
+  }
+  if (state.done) return <Result ranked={state.ranked.slice(0, TOP_COUNT)} team={session.team} onRestart={restart} />
+  return <Matchup state={state} history={history} count={ids.length} onPick={pick} onBack={() => updateHistory((current) => current.slice(0, -1))} />
 }
