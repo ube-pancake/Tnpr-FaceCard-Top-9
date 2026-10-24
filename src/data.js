@@ -9,7 +9,10 @@ export const schools = [
   { id: 'higa', name: 'Higa', short: 'HG', color: '#74449a', accent: '#ead8f5' },
   { id: 'shiten', name: 'Shitenhoji', short: 'ST', color: '#14704d', accent: '#e8dc63' },
   { id: 'u17', name: 'U-17', short: 'U17', color: '#7b2025', accent: '#efeee9' },
-  { id: 'foreign', name: 'Foreign Teams', short: 'INT', color: '#234255', accent: '#75d7d1' },
+  { id: 'germany', name: 'Germany', short: 'GER', color: '#1d1d1f', accent: '#e2b13c' },
+  { id: 'france', name: 'France', short: 'FRA', color: '#1f3c8f', accent: '#f2f2f2' },
+  { id: 'usa', name: 'USA', short: 'USA', color: '#b0243a', accent: '#ffffff' },
+  { id: 'spain', name: 'Spain', short: 'ESP', color: '#c8102e', accent: '#f6c544' },
   { id: 'other', name: 'Other', short: 'OTH', color: '#715e52', accent: '#e7d6be' },
 ]
 
@@ -23,8 +26,16 @@ const roster = {
   rikkai: ['Seiichi Yukimura', 'Genichiro Sanada', 'Renji Yanagi', 'Akaya Kirihara', 'Masaharu Niou', 'Hiroshi Yagyuu', 'Bunta Marui', 'Jackal Kuwahara', 'Shiita Urayama', 'Yoshio Tamagawa'],
   higa: ['Eishiro Kite', 'Rin Hirakoba', 'Yujiro Kai', 'Hiroshi Chinen', 'Kei Tanishi', 'Kouichi Aragaki', 'Tomoya Shiranui'],
   shiten: ['Kuranosuke Shiraishi', 'Kintaro Toyama', 'Senri Chitose', 'Kenya Oshitari', 'Hikaru Zaizen', 'Gin Ishida', 'Koharu Konjiki', 'Yuuji Hitouji', 'Kenjiro Koishikawa'],
-  u17: ['Byodoin Phoenix', 'Kazuya Tokugawa', 'Jujiro Oni', 'Kanata Irie', 'Shuji Tanegashima', 'Duke Watanabe', 'Ryoga Echizen'],
-  foreign: ['Jürgen Volk', 'Q.P.', 'Zeus Iliopoulos', 'Leopold Camus', 'Alexander Amadeus'],
+  // U-17 and World Cup rosters follow tennimu.com (The Musical The Prince of Tennis II, 2020–2026).
+  u17: [
+    'Houou Byodoin', 'Kazuya Tokugawa', 'Jujiro Oni', 'Kanata Irie', 'Shuji Tanegashima', 'Duke Watanabe', 'Ryoga Echizen',
+    'Ryuji Omagari', 'Ikuto Kimijima', 'Atsukyo Tono', 'Tsukimitsu Ochi', 'Jusaburo Mori', 'Sotomichi Nakagauchi',
+    'Yudai Yamato', 'Shinobu Miyako', 'Chikahiko Matsudaira', 'Shun Suzuki', 'Issa Washio',
+  ],
+  germany: ['Jurgen Borisovich Volk', 'Q.P.', 'Michael Bismarck', 'Elmar Siegfried', 'A. Frankensteiner', 'Dankmar Schneider', 'Belti B Volk'],
+  france: ['Tristan Bardot', 'Timothee Moreau', 'Auguir Delon', 'Prince Ludwig Chardard', 'Edgar Delacroix', 'Jonathan Saint Georges'],
+  usa: ['Ralph Reinhart', 'Dodo Obando', 'Kiko Balentien'],
+  spain: ['Antonio da Medanore', 'Julio Roman', 'Mars de Colon', 'Silva Serra Banbieri', 'Romeo Fernandez', 'Sedah'],
   other: ['Nanjiro Echizen', 'Sasabe', 'Reiji Kamishiro', 'Tsubasa Hanamura'],
 }
 
@@ -101,18 +112,46 @@ const japaneseNames = {
   'Koharu Konjiki': '金色小春',
   'Yuuji Hitouji': '一氏ユウジ',
   'Kenjiro Koishikawa': '小石川健二郎',
-  'Byodoin Phoenix': '平等院鳳凰',
+  'Houou Byodoin': '平等院鳳凰',
   'Kazuya Tokugawa': '徳川カズヤ',
   'Jujiro Oni': '鬼 十次郎',
   'Kanata Irie': '入江奏多',
   'Shuji Tanegashima': '種ヶ島修二',
   'Duke Watanabe': 'デューク渡邊',
   'Ryoga Echizen': '越前リョーガ',
-  'Jürgen Volk': 'ユルゲン・バリーサヴィチ・ボルク',
+  'Ryuji Omagari': '大曲竜次',
+  'Ikuto Kimijima': '君島育斗',
+  'Atsukyo Tono': '遠野篤京',
+  'Tsukimitsu Ochi': '越知月光',
+  'Jusaburo Mori': '毛利寿三郎',
+  'Sotomichi Nakagauchi': '中河内外道',
+  'Yudai Yamato': '大和祐大',
+  'Shinobu Miyako': '都 忍',
+  'Chikahiko Matsudaira': '松平親彦',
+  'Shun Suzuki': '鈴木 惷',
+  'Issa Washio': '鷲尾一茶',
+  'Jurgen Borisovich Volk': 'ユルゲン・バリーサヴィチ・ボルク',
   'Q.P.': 'Q・P',
-  'Zeus Iliopoulos': 'ゼウス・イリオポウロス',
-  'Leopold Camus': 'L・カミュ・ド・シャルパンティエ',
-  'Alexander Amadeus': 'アレキサンダー・アマデウス',
+  'Michael Bismarck': 'ミハエル・ビスマルク',
+  'Elmar Siegfried': 'エルマー・ジークフリート',
+  'A. Frankensteiner': 'A・フランケンシュタイナー',
+  'Dankmar Schneider': 'ダンクマール・シュナイダー',
+  'Belti B Volk': 'ベルティ・B・ボルク',
+  'Tristan Bardot': 'トリスタン・バルドー',
+  'Timothee Moreau': 'ティモテ・モロー',
+  'Auguir Delon': 'オジュワール・ドロン',
+  'Prince Ludwig Chardard': 'プランス・ルドヴィック・シャルダール',
+  'Edgar Delacroix': 'エドガー・ドラクロワ',
+  'Jonathan Saint Georges': 'ジョナタン・サン・ジョルジュ',
+  'Ralph Reinhart': 'ラルフ・ラインハート',
+  'Dodo Obando': 'ドゥドゥ・オバンドゥー',
+  'Kiko Balentien': 'キコ・バレンティン',
+  'Antonio da Medanore': 'アントニオ・ダ・メダノレ',
+  'Julio Roman': 'フリオ・ロマン',
+  'Mars de Colon': 'マルス・デ・コロン',
+  'Silva Serra Banbieri': 'シルバ・セラ・バンビエーリ',
+  'Romeo Fernandez': 'ロミオ・フェルナンデス',
+  Sedah: 'セダ',
   'Nanjiro Echizen': '越前南次郎',
   Sasabe: '佐々部',
   'Reiji Kamishiro': '神城玲治',
@@ -121,8 +160,11 @@ const japaneseNames = {
 
 const slugify = (value) => value.toLowerCase().replace(/[.']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
-// Teams to include. Set to null to use the full roster (U-17, foreign teams and others come later).
-const ACTIVE_TEAMS = ['seigaku', 'fudomine', 'rudolph', 'yamabuki', 'hyoutei', 'rokkaku', 'rikkai', 'higa', 'shiten']
+// Teams to include. Set to null to use the full roster.
+const ACTIVE_TEAMS = [
+  'seigaku', 'fudomine', 'rudolph', 'yamabuki', 'hyoutei', 'rokkaku', 'rikkai', 'higa', 'shiten',
+  'u17', 'germany', 'france', 'usa', 'spain',
+]
 
 export const activeSchools = schools.filter((school) => !ACTIVE_TEAMS || ACTIVE_TEAMS.includes(school.id))
 
