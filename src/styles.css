@@ -40,6 +40,9 @@ h2 { margin: 18px 0 14px; font-size: 20px; font-weight: 800; }
 .link { display: block; margin: 16px auto 0; border: 0; background: none; color: var(--muted); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
 .link:disabled { opacity: .35; cursor: default; text-decoration: none; }
 
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; font-size: 13px; color: var(--muted); }
+.home { padding: 6px 12px; border: 1px solid var(--line); border-radius: 99px; background: #fff; font-size: 13px; font-weight: 700; }
+.home:hover { border-color: var(--violet); color: #4b3fd6; }
 .progress { display: flex; align-items: center; gap: 12px; }
 .progress span { font-size: 13px; color: var(--muted); order: 2; min-width: 34px; text-align: right; }
 .bar { flex: 1; height: 8px; border-radius: 99px; background: var(--soft); overflow: hidden; }

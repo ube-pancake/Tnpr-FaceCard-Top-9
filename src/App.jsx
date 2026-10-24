@@ -84,7 +84,7 @@ function Intro({ onStart, resumeTeam, onResume }) {
   )
 }
 
-function Matchup({ state, history, count, onPick, onBack }) {
+function Matchup({ state, history, count, team, onPick, onBack, onHome }) {
   const pair = currentPair(state)
   const percent = progress(state, count)
 
@@ -99,6 +99,10 @@ function Matchup({ state, history, count, onPick, onBack }) {
 
   return (
     <main className="screen">
+      <div className="topbar">
+        <button className="home" onClick={onHome}>⌂ Home</button>
+        <span>{teamLabel(team)}</span>
+      </div>
       <div className="progress"><span>{percent}%</span><div className="bar"><i style={{ width: `${percent}%` }} /></div></div>
       <h2>Which face do you like best?</h2>
       <div className="duel">
@@ -312,5 +316,15 @@ export default function App() {
     )
   }
   if (state.done) return <Result ranked={state.ranked.slice(0, TOP_COUNT)} team={session.team} onRestart={restart} />
-  return <Matchup state={state} history={history} count={ids.length} onPick={pick} onBack={() => updateHistory((current) => current.slice(0, -1))} />
+  return (
+    <Matchup
+      state={state}
+      history={history}
+      count={ids.length}
+      team={session.team}
+      onPick={pick}
+      onBack={() => updateHistory((current) => current.slice(0, -1))}
+      onHome={restart}
+    />
+  )
 }
