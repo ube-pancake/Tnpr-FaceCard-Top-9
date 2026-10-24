@@ -160,8 +160,20 @@ const loadPortrait = (player) => new Promise((resolve) => {
   tryLoad(0)
 })
 
+const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches
+
+// ctx.roundRect is missing on iOS 15 and older, so draw rounded corners by hand there.
+const roundRect = (ctx, x, y, w, h, r) => {
+  if (ctx.roundRect) return ctx.roundRect(x, y, w, h, r)
+  ctx.moveTo(x + r, y)
+  ctx.arcTo(x + w, y, x + w, y + h, r)
+  ctx.arcTo(x + w, y + h, x, y + h, r)
+  ctx.arcTo(x, y + h, x, y, r)
+  ctx.arcTo(x, y, x + w, y, r)
+  ctx.closePath()
+}
+
 function Result({ ranked, team, onRestart }) {
-  const canvasRef = useRef(null)
   const [notice, setNotice] = useState('')
   // Smaller teams can't fill the 3×3 layout, so they're shown in plain rank order.
   const order = ranked.length >= GRID_ORDER.length ? GRID_ORDER : ranked.map((_, rank) => rank)
@@ -170,13 +182,13 @@ function Result({ ranked, team, onRestart }) {
   const heading = `Top ${ranked.length}`
   const subtitle = team === ALL ? 'Prince of Tennis best face' : `Prince of Tennis best face · ${teamLabel(team)}`
 
-  const saveImage = async () => {
+  const renderImage = async () => {
     const size = 360
     const gap = 24
     const pad = 48
     const label = 84
     const top = 190
-    const canvas = canvasRef.current
+    const canvas = document.createElement('canvas')
     canvas.width = pad * 2 + size * 3 + gap * 2
     canvas.height = top + (size + label + gap) * rows + 40
     const ctx = canvas.getContext('2d')
@@ -209,14 +221,14 @@ function Result({ ranked, team, onRestart }) {
         ctx.shadowBlur = 36
         ctx.fillStyle = gradient(x, y, size, size)
         ctx.beginPath()
-        ctx.roundRect(x - 8, y - 8, size + 16, size + 16, 28)
+        roundRect(ctx, x - 8, y - 8, size + 16, size + 16, 28)
         ctx.fill()
         ctx.restore()
       }
 
       ctx.save()
       ctx.beginPath()
-      ctx.roundRect(x, y, size, size, 22)
+      roundRect(ctx, x, y, size, size, 22)
       ctx.clip()
       if (img) {
         const frame = frameFor(player.id)
@@ -239,7 +251,7 @@ function Result({ ranked, team, onRestart }) {
       const pillW = first ? 96 : 76
       ctx.fillStyle = first ? gradient(x + 16, y + 16, pillW, 44) : 'rgba(255,255,255,.95)'
       ctx.beginPath()
-      ctx.roundRect(x + 16, y + 16, pillW, 44, 22)
+      roundRect(ctx, x + 16, y + 16, pillW, 44, 22)
       ctx.fill()
       ctx.fillStyle = first ? '#fff' : '#16161d'
       ctx.font = '800 26px sans-serif'
@@ -253,10 +265,54 @@ function Result({ ranked, team, onRestart }) {
       ctx.fillText(school.name, x + size / 2, y + size + 70)
     })
 
+    return canvas
+  }
+
+  // Build the image as soon as the result shows. Phones only allow saving or sharing straight
+  // from a tap, so the tap must not wait on loading photos.
+  const fileName = `my-top-${ranked.length}${team === ALL ? '' : `-${team}`}.png`
+  const [image, setImage] = useState(null)
+  const [preview, setPreview] = useState(false)
+  useEffect(() => {
+    let url = null
+    let cancelled = false
+    renderImage()
+      .then((canvas) => new Promise((resolve) => canvas.toBlob(resolve, 'image/png')))
+      .then((blob) => {
+        if (cancelled || !blob) return
+        url = URL.createObjectURL(blob)
+        setImage({ url, file: new File([blob], fileName, { type: 'image/png' }) })
+      })
+      .catch(() => setNotice('Could not create the image'))
+    return () => {
+      cancelled = true
+      if (url) URL.revokeObjectURL(url)
+    }
+  }, [])
+
+  const saveImage = async () => {
+    if (!image) return
+    const shareable = isTouchDevice() && navigator.canShare?.({ files: [image.file] })
+    if (shareable) {
+      try {
+        await navigator.share({ files: [image.file], title: `My ${heading} Faces` })
+        setNotice('')
+        return
+      } catch (error) {
+        if (error.name === 'AbortError') return
+      }
+    }
+    if (isTouchDevice()) {
+      // iPhone and in-app browsers (LINE, Instagram, X) often ignore downloads: show the image to long-press.
+      setPreview(true)
+      return
+    }
     const link = document.createElement('a')
-    link.download = `my-top-${ranked.length}${team === ALL ? '' : `-${team}`}.png`
-    link.href = canvas.toDataURL('image/png')
+    link.download = fileName
+    link.href = image.url
+    document.body.appendChild(link)
     link.click()
+    link.remove()
     setNotice('Image saved')
   }
 
@@ -279,7 +335,7 @@ function Result({ ranked, team, onRestart }) {
         ))}
       </div>
       <div className="actions">
-        <button className="primary" onClick={saveImage}>Save image</button>
+        <button className="primary" onClick={saveImage} disabled={!image}>{image ? 'Save image' : 'Preparing image…'}</button>
         <button className="secondary" onClick={onRestart}>Start over</button>
       </div>
       <p className="notice" role="status">{notice}</p>
@@ -300,7 +356,13 @@ function Result({ ranked, team, onRestart }) {
           })}
         </ol>
       </section>
-      <canvas ref={canvasRef} hidden />
+      {preview && image && (
+        <div className="save-preview" role="dialog" aria-label="Save your image" onClick={() => setPreview(false)}>
+          <p>Press and hold the image, then choose <b>Save to Photos</b> or <b>Download image</b>.</p>
+          <img src={image.url} alt={`My ${heading} Faces`} onClick={(event) => event.stopPropagation()} />
+          <button className="secondary" onClick={() => setPreview(false)}>Close</button>
+        </div>
+      )}
     </main>
   )
 }
