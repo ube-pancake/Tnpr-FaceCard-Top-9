@@ -1,5 +1,5 @@
 // Web app URL from deploying docs/google-apps-script.gs (ends in /exec). Leave empty to turn collection off.
-export const RESULTS_URL = ''
+export const RESULTS_URL = 'https://script.google.com/macros/s/AKfycby-i4MlkJqsYTB0NIm6IVFQA17vPan0csLWhWLRpkrdVlYjdsNeCglPr6shFva8J33udg/exec'
 
 // Sends one finished ranking to the Google Sheet. Only the live site sends, so local test runs
 // don't count. Failures are ignored; the result screen never waits on this.
