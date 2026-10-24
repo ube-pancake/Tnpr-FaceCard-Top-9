@@ -160,7 +160,12 @@ const loadPortrait = (player) => new Promise((resolve) => {
   tryLoad(0)
 })
 
-const isTouchDevice = () => window.matchMedia('(pointer: coarse)').matches
+// Some in-app browsers (e.g. Messenger on Android) report a fine pointer, so check every touch signal.
+const isTouchDevice = () =>
+  window.matchMedia('(pointer: coarse), (any-pointer: coarse)').matches || navigator.maxTouchPoints > 0
+
+// Browsers built into apps silently drop downloads and often fake the share sheet.
+const isInAppBrowser = () => /FBAN|FBAV|FB_IAB|FBIOS|FB4A|Messenger|Instagram|Line\/|Twitter|MicroMessenger|KAKAOTALK|TikTok|musical_ly/i.test(navigator.userAgent)
 
 // ctx.roundRect is missing on iOS 15 and older, so draw rounded corners by hand there.
 const roundRect = (ctx, x, y, w, h, r) => {
@@ -281,7 +286,12 @@ function Result({ ranked, team, onRestart }) {
       .then((blob) => {
         if (cancelled || !blob) return
         url = URL.createObjectURL(blob)
-        setImage({ url, file: new File([blob], fileName, { type: 'image/png' }) })
+        // A data URL for the press-and-hold view: some in-app browsers can't save blob: images.
+        const reader = new FileReader()
+        reader.onload = () => {
+          if (!cancelled) setImage({ url, dataUrl: reader.result, file: new File([blob], fileName, { type: 'image/png' }) })
+        }
+        reader.readAsDataURL(blob)
       })
       .catch(() => setNotice('Could not create the image'))
     return () => {
@@ -292,6 +302,10 @@ function Result({ ranked, team, onRestart }) {
 
   const saveImage = async () => {
     if (!image) return
+    if (isInAppBrowser()) {
+      setPreview(true)
+      return
+    }
     const shareable = isTouchDevice() && navigator.canShare?.({ files: [image.file] })
     if (shareable) {
       try {
@@ -303,7 +317,7 @@ function Result({ ranked, team, onRestart }) {
       }
     }
     if (isTouchDevice()) {
-      // iPhone and in-app browsers (LINE, Instagram, X) often ignore downloads: show the image to long-press.
+      // Phones without a share sheet often ignore downloads: show the image to long-press.
       setPreview(true)
       return
     }
@@ -313,7 +327,7 @@ function Result({ ranked, team, onRestart }) {
     document.body.appendChild(link)
     link.click()
     link.remove()
-    setNotice('Image saved')
+    setNotice('Download started. Check your Downloads folder.')
   }
 
   return (
@@ -359,7 +373,10 @@ function Result({ ranked, team, onRestart }) {
       {preview && image && (
         <div className="save-preview" role="dialog" aria-label="Save your image" onClick={() => setPreview(false)}>
           <p>Press and hold the image, then choose <b>Save to Photos</b> or <b>Download image</b>.</p>
-          <img src={image.url} alt={`My ${heading} Faces`} onClick={(event) => event.stopPropagation()} />
+          {isInAppBrowser() && (
+            <p className="tip">Not working? Open this page in Chrome or Safari: tap <b>⋯</b> and choose <b>Open in browser</b>.</p>
+          )}
+          <img src={image.dataUrl} alt={`My ${heading} Faces`} onClick={(event) => event.stopPropagation()} />
           <button className="secondary" onClick={() => setPreview(false)}>Close</button>
         </div>
       )}
