@@ -1,6 +1,7 @@
 # TeniPuri Top9
 
 A photo-only "pick the face you like best" sorter for The Prince of Tennis. Compare two photos at a time and finish with a Top 9 grid, with #1 in the center, that you can save as an image.
+Link: https://ube-pancake.github.io/Tnpr-FaceCard-Top-9/
 
 ## Run locally
 
