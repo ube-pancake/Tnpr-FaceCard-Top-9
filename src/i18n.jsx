@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import { schoolMap } from './data.js'
+import { activeSchools, schoolMap } from './data.js'
 
 // Every piece of on-screen text, in English and Japanese. Results sent to the Google Sheet stay
 // in English so the ranking doesn't split by language.
@@ -41,6 +41,13 @@ const strings = {
     lightMode: 'Light mode',
     otherLanguage: '日本語',
     otherLanguageLabel: 'Switch to Japanese',
+    teamsCount: (n) => `${n} teams`,
+    clearSelection: 'Clear selection',
+    pickTeam: 'Pick at least one team to start.',
+    about: 'About',
+    contact: 'Contact',
+    aboutTitle: 'About',
+    madeBy: 'made by',
   },
   ja: {
     brand: 'テニプリ 好き顔ランキング',
@@ -79,6 +86,13 @@ const strings = {
     lightMode: 'ライトモード',
     otherLanguage: 'English',
     otherLanguageLabel: '英語に切り替える',
+    teamsCount: (n) => `${n}チーム`,
+    clearSelection: '選択をクリア',
+    pickTeam: 'チームを1つ以上選んでください。',
+    about: 'About',
+    contact: 'Contact',
+    aboutTitle: 'このサイトについて',
+    madeBy: '制作',
   },
 }
 
@@ -98,7 +112,16 @@ export const textFor = (lang) => {
     // Main name and the smaller name under it: Japanese first in Japanese mode.
     nameOf: (player) => (ja && player.nameJa ? player.nameJa : player.name),
     altNameOf: (player) => (ja ? player.name : player.nameJa),
-    teamName: (team) => (team === 'all' ? t.allTeams : (ja && schoolMap[team].nameJa) || schoolMap[team].name),
+    teamName,
+    // A mix of teams: "All teams", one name, up to three joined with +, or a count.
+    teamsLabel: (teams = []) => {
+      if (teams.length === activeSchools.length) return t.allTeams
+      if (teams.length <= 3) return teams.map(teamName).join(' + ')
+      return t.teamsCount(teams.length)
+    },
+  }
+  function teamName(team) {
+    return team === 'all' ? t.allTeams : (ja && schoolMap[team].nameJa) || schoolMap[team].name
   }
 }
 

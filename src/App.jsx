@@ -11,10 +11,20 @@ const SAVE_KEY = 'favorite-faces-top9'
 const LANG_KEY = 'favorite-faces-lang'
 const THEME_KEY = 'favorite-faces-theme'
 const WAVEBOX_URL = 'https://wavebox.me/wave/6vf81qelg8m318zr/'
-const ALL = 'all'
+const GITHUB_URL = 'https://github.com/ube-pancake'
+const ALL_TEAMS = activeSchools.map((school) => school.id)
 
-const playersFor = (team) => players.filter((player) => team === ALL || player.schoolId === team)
-const idsFor = (team) => playersFor(team).map((player) => player.id)
+// A sort covers a list of team ids, in picker order. Saves from before mixing teams have a single
+// `team` that's an id or 'all'.
+const normalizeTeams = (value) => {
+  const list = value === 'all' ? ALL_TEAMS : Array.isArray(value) ? value : [value]
+  return ALL_TEAMS.filter((id) => list.includes(id))
+}
+const isAllTeams = (teams) => teams.length === ALL_TEAMS.length
+const playersFor = (teams) => players.filter((player) => teams.includes(player.schoolId))
+const idsFor = (teams) => playersFor(teams).map((player) => player.id)
+// English label for the Google Sheet, whatever the page language.
+const sheetLabel = (teams) => (isAllTeams(teams) ? 'All teams' : teams.map((id) => schoolMap[id].name).join(' + '))
 
 const readPref = (key) => {
   try {
@@ -34,17 +44,17 @@ const writePref = (key, value) => {
 const loadSaved = () => {
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY))
-    const validTeam = saved?.team === ALL || activeSchools.some((school) => school.id === saved?.team)
-    if (!validTeam || !saved.history?.length) return null
+    const teams = normalizeTeams(saved?.teams ?? saved?.team)
+    if (!teams.length || !saved.history?.length) return null
     // A save from before characters were added, removed or renamed can't be resumed safely.
-    const ids = idsFor(saved.team)
+    const ids = idsFor(teams)
     const known = (id) => playerMap[id]
     const matches = (state) =>
       state.lostTo &&
       Object.keys(state.lostTo).length === ids.length &&
       ids.every((id) => state.lostTo[id]) &&
       [state.round, state.next, state.ranked, state.skipped || []].every((list) => Array.isArray(list) && list.every(known))
-    if (saved.history.every(matches)) return saved
+    if (saved.history.every(matches)) return { teams, history: saved.history }
   } catch {
     // ignore unreadable save data
   }
@@ -88,49 +98,69 @@ function Portrait({ player, aspect = 0.8, frame, className = '' }) {
   )
 }
 
-function Intro({ onStart, resumeTeam, onResume, onEditFraming }) {
-  const { t, teamName } = useT()
-  const [team, setTeam] = useState(ALL)
-  const pool = playersFor(team)
-  const preview = useMemo(() => [...playersFor(team)].sort(() => Math.random() - 0.5).slice(0, 9), [team])
+function TeamCheckbox({ checked, mixed, color, label, count, onChange }) {
+  return (
+    <label className={`team${checked ? ' active' : ''}`}>
+      <input type="checkbox" checked={checked} onChange={onChange} ref={(input) => { if (input) input.indeterminate = Boolean(mixed) }} />
+      <i className={`check${mixed ? ' mixed' : ''}`} style={{ '--team': color }} aria-hidden="true" />
+      <span>{label}</span>
+      <small>{count}</small>
+    </label>
+  )
+}
+
+function Intro({ onStart, resumeTeams, onResume, onEditFraming }) {
+  const { t, teamName, teamsLabel } = useT()
+  const [teams, setTeams] = useState(ALL_TEAMS)
+  const pool = playersFor(teams)
+  const preview = useMemo(() => [...playersFor(teams)].sort(() => Math.random() - 0.5).slice(0, 9), [teams.join()])
   const topCount = Math.min(TOP_COUNT, pool.length)
-  const options = [{ id: ALL, color: null }, ...activeSchools]
+  const all = isAllTeams(teams)
+  const toggle = (id) => setTeams((current) => normalizeTeams(current.includes(id) ? current.filter((team) => team !== id) : [...current, id]))
 
   return (
     <main className="screen intro">
       <nav className="teams" aria-label={t.chooseTeam}>
         <p className="teams-title">{t.sortByTeam}</p>
-        {options.map((option) => (
-          <button
-            key={option.id}
-            className={`team${team === option.id ? ' active' : ''}`}
-            aria-pressed={team === option.id}
-            onClick={() => setTeam(option.id)}
-          >
-            <i style={{ background: option.color || 'linear-gradient(135deg, var(--violet), var(--pink))' }} />
-            <span>{teamName(option.id)}</span>
-            <small>{playersFor(option.id).length}</small>
-          </button>
+        <TeamCheckbox
+          checked={all}
+          mixed={!all && teams.length > 0}
+          color="var(--violet)"
+          label={t.allTeams}
+          count={players.length}
+          onChange={() => setTeams(all ? [] : ALL_TEAMS)}
+        />
+        {activeSchools.map((school) => (
+          <TeamCheckbox
+            key={school.id}
+            checked={teams.includes(school.id)}
+            color={school.color}
+            label={teamName(school.id)}
+            count={playersFor([school.id]).length}
+            onChange={() => toggle(school.id)}
+          />
         ))}
+        <button className="clear" onClick={() => setTeams([])} disabled={!teams.length}>{t.clearSelection}</button>
       </nav>
       <section className="intro-main">
-        <p className="eyebrow">{t.brand}{team !== ALL && ` · ${teamName(team)}`}</p>
-        <h1><Accented parts={t.title(topCount)} /></h1>
+        <p className="eyebrow">{t.brand}{teams.length > 0 && !all && ` · ${teamsLabel(teams)}`}</p>
+        <h1><Accented parts={t.title(topCount || TOP_COUNT)} /></h1>
         <p className="sub">{t.sub}</p>
         <div className="grid3 preview">
           {preview.map((player) => <Portrait key={player.id} player={player} />)}
+          {!preview.length && <p className="pick-hint">{t.pickTeam}</p>}
         </div>
-        <p className="count">{t.count(topCount, pool.length, team !== ALL && teamName(team))}</p>
-        <button className="primary" onClick={() => onStart(team)}>{t.start}</button>
-        {onResume && <button className="link" onClick={onResume}>{t.resume(teamName(resumeTeam))}</button>}
+        <p className="count">{pool.length ? t.count(topCount, pool.length, !all && teamsLabel(teams)) : t.pickTeam}</p>
+        <button className="primary" onClick={() => onStart(teams)} disabled={!pool.length}>{t.start}</button>
+        {onResume && <button className="link" onClick={onResume}>{t.resume(teamsLabel(resumeTeams))}</button>}
         {import.meta.env.DEV && <button className="link" onClick={onEditFraming}>Adjust photo framing (local only)</button>}
       </section>
     </main>
   )
 }
 
-function Matchup({ state, history, count, team, onPick, onNeither, onBack, onHome }) {
-  const { t, nameOf, altNameOf, teamName } = useT()
+function Matchup({ state, history, count, teams, onPick, onNeither, onBack, onHome }) {
+  const { t, nameOf, altNameOf, teamName, teamsLabel } = useT()
   const pair = currentPair(state)
   // "Neither" can bring earlier losers back, which would make the estimate dip; show the best
   // value reached so far at or before this step, so it only goes down when the player steps back.
@@ -145,6 +175,7 @@ function Matchup({ state, history, count, team, onPick, onNeither, onBack, onHom
     const onKey = (event) => {
       // Held-down keys and shortcuts like Alt+← (browser back) shouldn't count as picks.
       if (event.repeat || event.altKey || event.ctrlKey || event.metaKey) return
+      if (document.querySelector('[aria-modal="true"]')) return
       if (event.key === 'ArrowLeft') onPick(0)
       if (event.key === 'ArrowRight') onPick(1)
       if (event.key === 'ArrowDown' || event.key === 'n' || event.key === 'N') onNeither()
@@ -157,7 +188,7 @@ function Matchup({ state, history, count, team, onPick, onNeither, onBack, onHom
     <main className="screen">
       <div className="topbar">
         <button className="home" onClick={onHome}>{t.home}</button>
-        <span>{teamName(team)}</span>
+        <span>{teamsLabel(teams)}</span>
       </div>
       <div className="progress"><span>{percent}%</span><div className="bar"><i style={{ width: `${percent}%` }} /></div></div>
       <h2>{t.question}</h2>
@@ -234,14 +265,14 @@ const fitText = (ctx, text, x, y, maxWidth, weight, size) => {
   ctx.fillText(text, x, y)
 }
 
-function Result({ ranked, team, onRestart }) {
-  const { lang, t, nameOf, altNameOf, teamName } = useT()
+function Result({ ranked, teams, onRestart }) {
+  const { lang, t, nameOf, altNameOf, teamName, teamsLabel } = useT()
   const [notice, setNotice] = useState('')
   // Smaller teams can't fill the 3×3 layout, so they're shown in plain rank order.
   const order = ranked.length >= GRID_ORDER.length ? GRID_ORDER : ranked.map((_, rank) => rank)
   const cells = order.map((rank) => ({ rank, player: playerMap[ranked[rank]] }))
   const rows = Math.ceil(cells.length / 3)
-  const subtitle = team === ALL ? t.brand : `${t.brand} · ${teamName(team)}`
+  const subtitle = isAllTeams(teams) ? t.brand : `${t.brand} · ${teamsLabel(teams)}`
 
   // The saved image is always light, whatever the page theme, so it looks the same when shared.
   const renderImage = async () => {
@@ -330,7 +361,7 @@ function Result({ ranked, team, onRestart }) {
 
   // Build the image as soon as the result shows. Phones only allow saving or sharing straight
   // from a tap, so the tap must not wait on loading photos. Rebuilt when the language changes.
-  const fileName = `my-top-${ranked.length}${team === ALL ? '' : `-${team}`}.png`
+  const fileName = `my-top-${ranked.length}${isAllTeams(teams) ? '' : `-${teams.join('-')}`}.png`
   const [image, setImage] = useState(null)
   const [preview, setPreview] = useState(false)
   useEffect(() => {
@@ -392,7 +423,7 @@ function Result({ ranked, team, onRestart }) {
 
   return (
     <main className="screen">
-      <p className="eyebrow">{t.yourResult}{team !== ALL && ` · ${teamName(team)}`}</p>
+      <p className="eyebrow">{t.yourResult}{!isAllTeams(teams) && ` · ${teamsLabel(teams)}`}</p>
       <h1><Accented parts={t.resultTitle(ranked.length)} /></h1>
       <div className="grid3 result">
         {cells.map(({ rank, player }) => (
@@ -442,11 +473,11 @@ function Result({ ranked, team, onRestart }) {
   )
 }
 
-function Empty({ team, onUndo, onRestart }) {
-  const { t, teamName } = useT()
+function Empty({ teams, onUndo, onRestart }) {
+  const { t, teamsLabel } = useT()
   return (
     <main className="screen">
-      <p className="eyebrow">{t.yourResult}{team !== ALL && ` · ${teamName(team)}`}</p>
+      <p className="eyebrow">{t.yourResult}{!isAllTeams(teams) && ` · ${teamsLabel(teams)}`}</p>
       <h1>{t.noFaces}</h1>
       <p className="sub">{t.noFacesSub}</p>
       <div className="actions">
@@ -457,12 +488,33 @@ function Empty({ team, onUndo, onRestart }) {
   )
 }
 
-// Language and theme switches, shown at the top of every screen.
-function Preferences({ theme, onToggleTheme, onToggleLang }) {
+function About({ onClose }) {
+  const { t } = useT()
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" role="dialog" aria-modal="true" aria-label={t.aboutTitle} onClick={(event) => event.stopPropagation()}>
+        <h2>{t.aboutTitle}</h2>
+        <p>{t.madeBy} <b>ube</b></p>
+        <p><a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">github.com/ube-pancake</a></p>
+        <button className="secondary" onClick={onClose}>{t.close}</button>
+      </div>
+    </div>
+  )
+}
+
+// About, Contact, language and theme, shown at the top of every screen.
+function Preferences({ theme, onToggleTheme, onToggleLang, onAbout }) {
   const { t } = useT()
   const dark = theme === 'dark'
   return (
     <div className="prefs">
+      <button className="pref" onClick={onAbout}>{t.about}</button>
+      <a className="pref" href={WAVEBOX_URL} target="_blank" rel="noopener noreferrer">{t.contact}</a>
       <button className="pref" onClick={onToggleLang} aria-label={t.otherLanguageLabel}>{t.otherLanguage}</button>
       <button className="pref" onClick={onToggleTheme} aria-pressed={dark} aria-label={dark ? t.lightMode : t.darkMode}>
         {dark ? '☀' : '☾'} <span>{dark ? t.lightMode : t.darkMode}</span>
@@ -498,6 +550,7 @@ export default function App() {
   const [session, setSession] = useState(null)
   const [saved, setSaved] = useState(loadSaved)
   const [editingFraming, setEditingFraming] = useState(false)
+  const [showAbout, setShowAbout] = useState(false)
   const [lang, setLang] = useState(() => (readPref(LANG_KEY) === 'ja' ? 'ja' : 'en'))
   // A theme chosen with the toggle wins; until then the page follows the device.
   const [chosenTheme, setChosenTheme] = useState(() => {
@@ -508,7 +561,7 @@ export default function App() {
   const theme = chosenTheme || systemTheme
   const history = session?.history
   const state = history?.[history.length - 1]
-  const ids = useMemo(() => (session ? idsFor(session.team) : []), [session?.team])
+  const ids = useMemo(() => (session ? idsFor(session.teams) : []), [session?.teams.join()])
 
   useEffect(() => {
     document.documentElement.lang = lang
@@ -537,8 +590,8 @@ export default function App() {
 
   // Download the whole team's photos up front so fast pickers never see a card still loading.
   useEffect(() => {
-    if (session) playersFor(session.team).forEach((player) => loadPortrait(player))
-  }, [session?.team])
+    if (session) playersFor(session.teams).forEach((player) => loadPortrait(player))
+  }, [session?.teams.join()])
 
   // Count each finished sort once in the overall ranking (always in English, whatever the page language).
   const sentRef = useRef(null)
@@ -547,7 +600,7 @@ export default function App() {
     if (!state?.done || !state.ranked.length || sentRef.current === state) return
     sentRef.current = state
     sendResult({
-      team: session.team === ALL ? 'All teams' : schoolMap[session.team].name,
+      team: sheetLabel(session.teams),
       ranking: state.ranked.slice(0, TOP_COUNT).map((id, i) => {
         const player = playerMap[id]
         return { rank: i + 1, name: player.name, nameJa: player.nameJa, school: schoolMap[player.schoolId].name }
@@ -576,23 +629,23 @@ export default function App() {
   } else if (!session) {
     screen = (
       <Intro
-        onStart={(team) => setSession({ team, history: [startSort(idsFor(team))] })}
-        resumeTeam={saved?.team}
+        onStart={(teams) => setSession({ teams, history: [startSort(idsFor(teams))] })}
+        resumeTeams={saved?.teams}
         onResume={saved ? () => setSession(saved) : null}
         onEditFraming={() => setEditingFraming(true)}
       />
     )
   } else if (state.done && !state.ranked.length) {
-    screen = <Empty team={session.team} onUndo={() => updateHistory((current) => current.slice(0, -1))} onRestart={restart} />
+    screen = <Empty teams={session.teams} onUndo={() => updateHistory((current) => current.slice(0, -1))} onRestart={restart} />
   } else if (state.done) {
-    screen = <Result ranked={state.ranked.slice(0, TOP_COUNT)} team={session.team} onRestart={restart} />
+    screen = <Result ranked={state.ranked.slice(0, TOP_COUNT)} teams={session.teams} onRestart={restart} />
   } else {
     screen = (
       <Matchup
         state={state}
         history={history}
         count={ids.length}
-        team={session.team}
+        teams={session.teams}
         onPick={pick}
         onNeither={pickNeither}
         onBack={() => updateHistory((current) => current.slice(0, -1))}
@@ -603,9 +656,15 @@ export default function App() {
 
   return (
     <LangContext.Provider value={lang}>
-      <Preferences theme={theme} onToggleTheme={toggleTheme} onToggleLang={() => setLang(lang === 'ja' ? 'en' : 'ja')} />
+      <Preferences
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onToggleLang={() => setLang(lang === 'ja' ? 'en' : 'ja')}
+        onAbout={() => setShowAbout(true)}
+      />
       {screen}
       <Footer />
+      {showAbout && <About onClose={() => setShowAbout(false)} />}
     </LangContext.Provider>
   )
 }
