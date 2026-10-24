@@ -29,8 +29,27 @@ h2 { margin: 18px 0 14px; font-size: 20px; font-weight: 800; }
 
 .portrait { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 10px; background: var(--team, #ddd); }
 .portrait .monogram { position: absolute; inset: 0; display: grid; place-items: center; color: var(--accent, #fff); font-weight: 800; font-size: 44px; letter-spacing: .02em; }
-.portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; opacity: 0; }
+.portrait img { position: absolute; max-width: none; opacity: 0; }
 .portrait img.loaded { opacity: 1; }
+.portrait img.backdrop { inset: -10%; width: 120%; height: 120%; object-fit: cover; filter: blur(14px) brightness(.85); opacity: 1; }
+
+.framer { max-width: 900px; }
+.framer h2 small { font-size: 13px; color: var(--muted); font-weight: 500; }
+.framer-work { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 16px; align-items: start; }
+.framer-source { position: relative; cursor: crosshair; border-radius: 10px; overflow: hidden; line-height: 0; }
+.framer-source img { width: 100%; height: auto; }
+.marker { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 2px var(--pink), 0 0 12px rgba(0,0,0,.5); pointer-events: none; }
+.framer-previews { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.framer-previews figure { margin: 0; }
+.framer-previews figcaption { margin-top: 4px; font-size: 11px; color: var(--muted); }
+.framer-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 18px; margin: 18px 0; font-size: 14px; }
+.framer-controls .secondary { padding: 8px 14px; }
+.framer-team h3 { margin: 18px 0 8px; text-align: left; font-size: 15px; }
+.framer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }
+.framer-grid button { position: relative; padding: 0; border: 2px solid transparent; border-radius: 12px; background: none; }
+.framer-grid button.active { border-color: var(--violet); }
+.framer-grid b { position: absolute; top: 4px; right: 4px; z-index: 3; padding: 0 5px; border-radius: 99px; color: #fff; font-size: 11px; background: var(--violet); }
+@media (max-width: 760px) { .framer-work { grid-template-columns: 1fr; } }
 
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 8px; background: var(--soft); border-radius: 14px; }
 .grid3.preview .monogram { font-size: 30px; }

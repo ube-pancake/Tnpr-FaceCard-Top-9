@@ -160,11 +160,9 @@ const japaneseNames = {
 
 const slugify = (value) => value.toLowerCase().replace(/[.']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
-// Teams to include. Set to null to use the full roster.
-const ACTIVE_TEAMS = [
-  'seigaku', 'fudomine', 'rudolph', 'yamabuki', 'hyoutei', 'rokkaku', 'rikkai', 'higa', 'shiten',
-  'u17', 'germany', 'france', 'usa', 'spain',
-]
+// Teams shown on the site. U-17 and the World Cup teams are in the roster but hidden until their
+// photos are ready; add 'u17', 'germany', 'france', 'usa' and 'spain' here to show them.
+const ACTIVE_TEAMS = ['seigaku', 'fudomine', 'rudolph', 'yamabuki', 'hyoutei', 'rokkaku', 'rikkai', 'higa', 'shiten']
 
 export const activeSchools = schools.filter((school) => !ACTIVE_TEAMS || ACTIVE_TEAMS.includes(school.id))
 

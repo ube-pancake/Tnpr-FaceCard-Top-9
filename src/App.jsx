@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { activeSchools, players, schoolMap } from './data.js'
 import { TOP_COUNT, choose, currentPair, progress, startSort } from './sorter.js'
+import { frameFor, layoutFor, toStyle } from './framing.js'
+import FrameEditor from './FrameEditor.jsx'
 
 const playerMap = Object.fromEntries(players.map((player) => [player.id, player]))
 const SAVE_KEY = 'favorite-faces-top9'
@@ -21,31 +23,44 @@ const loadSaved = () => {
   return null
 }
 
-function Portrait({ player, className = '' }) {
+const sourcesFor = (player) => [player.image, player.image.replace(/\.webp$/i, '.png'), player.image.replace(/\.webp$/i, '.jpg')]
+
+// aspect is the box's width / height: 4:5 cards by default, 1 for the square result grid.
+function Portrait({ player, aspect = 0.8, frame, className = '' }) {
   const [index, setIndex] = useState(0)
-  const [loaded, setLoaded] = useState(false)
-  const sources = [player.image, player.image.replace(/\.webp$/i, '.png'), player.image.replace(/\.webp$/i, '.jpg')]
+  const [size, setSize] = useState(null)
+  const sources = sourcesFor(player)
   const school = schoolMap[player.schoolId]
-  const initials = initialsOf(player)
+  const framing = frame || frameFor(player.id)
+  const layout = size ? toStyle(layoutFor(framing, size.w, size.h, aspect)) : null
 
   return (
-    <div className={`portrait ${className}`} style={{ '--team': school.color, '--accent': school.accent }} role="img" aria-label={player.name}>
-      <span className="monogram">{initials}</span>
+    <div
+      className={`portrait ${className}`}
+      style={{ '--team': school.color, '--accent': school.accent, aspectRatio: aspect }}
+      role="img"
+      aria-label={player.name}
+    >
+      <span className="monogram">{initialsOf(player)}</span>
       {index < sources.length && (
-        <img
-          key={sources[index]}
-          src={sources[index]}
-          alt=""
-          className={loaded ? 'loaded' : ''}
-          onLoad={() => setLoaded(true)}
-          onError={() => setIndex((current) => current + 1)}
-        />
+        <>
+          {framing.fit && layout && <img className="backdrop" src={sources[index]} alt="" />}
+          <img
+            key={sources[index]}
+            src={sources[index]}
+            alt=""
+            className={layout ? 'loaded' : ''}
+            style={layout || undefined}
+            onLoad={(event) => setSize({ w: event.target.naturalWidth, h: event.target.naturalHeight })}
+            onError={() => setIndex((current) => current + 1)}
+          />
+        </>
       )}
     </div>
   )
 }
 
-function Intro({ onStart, resumeTeam, onResume }) {
+function Intro({ onStart, resumeTeam, onResume, onEditFraming }) {
   const [team, setTeam] = useState(ALL)
   const pool = playersFor(team)
   const preview = useMemo(() => [...playersFor(team)].sort(() => Math.random() - 0.5).slice(0, 9), [team])
@@ -79,6 +94,7 @@ function Intro({ onStart, resumeTeam, onResume }) {
         <p className="count">Your Top {topCount} from {pool.length} characters{team !== ALL && ` in ${teamLabel(team)}`}.</p>
         <button className="primary" onClick={() => onStart(team)}>Start →</button>
         {onResume && <button className="link" onClick={onResume}>Resume where I left off ({teamLabel(resumeTeam)})</button>}
+        {import.meta.env.DEV && <button className="link" onClick={onEditFraming}>Adjust photo framing (local only)</button>}
       </section>
     </main>
   )
@@ -126,10 +142,13 @@ function Matchup({ state, history, count, team, onPick, onBack, onHome }) {
 // Rank index shown in each grid cell, left to right: 4 5 6 / 2 1 3 / 7 8 9, so #1 sits in the middle.
 const GRID_ORDER = [3, 4, 5, 1, 0, 2, 6, 7, 8]
 
-const initialsOf = (player) => player.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join('')
+const initialsOf = (player) => {
+  const parts = player.name.replace(/\./g, '').split(/\s+/)
+  return (parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : parts[0].slice(0, 2)).toUpperCase()
+}
 
 const loadPortrait = (player) => new Promise((resolve) => {
-  const sources = [player.image, player.image.replace(/\.webp$/i, '.png'), player.image.replace(/\.webp$/i, '.jpg')]
+  const sources = sourcesFor(player)
   const tryLoad = (n) => {
     if (n >= sources.length) return resolve(null)
     const img = new Image()
@@ -199,8 +218,14 @@ function Result({ ranked, team, onRestart }) {
       ctx.roundRect(x, y, size, size, 22)
       ctx.clip()
       if (img) {
-        const scale = Math.max(size / img.width, size / img.height)
-        ctx.drawImage(img, x + (size - img.width * scale) / 2, y, img.width * scale, img.height * scale)
+        const frame = frameFor(player.id)
+        const draw = (box) => ctx.drawImage(img, x + box.left * size, y + box.top * size, box.width * size, box.height * size)
+        if (frame.fit) {
+          ctx.filter = 'blur(18px) brightness(.85)'
+          draw(layoutFor({ ...frame, fit: false, zoom: 1.15 }, img.width, img.height, 1))
+          ctx.filter = 'none'
+        }
+        draw(layoutFor(frame, img.width, img.height, 1))
       } else {
         ctx.fillStyle = school.color
         ctx.fillRect(x, y, size, size)
@@ -242,7 +267,7 @@ function Result({ ranked, team, onRestart }) {
         {cells.map(({ rank, player }) => (
           <figure key={player.id} className={rank === 0 ? 'first' : ''}>
             <div className="frame">
-              <Portrait player={player} />
+              <Portrait player={player} aspect={1} />
               <b className="rank">#{rank + 1}</b>
             </div>
             <figcaption>
@@ -282,6 +307,7 @@ function Result({ ranked, team, onRestart }) {
 export default function App() {
   const [session, setSession] = useState(null)
   const [saved, setSaved] = useState(loadSaved)
+  const [editingFraming, setEditingFraming] = useState(false)
   const history = session?.history
   const state = history?.[history.length - 1]
   const ids = useMemo(() => (session ? idsFor(session.team) : []), [session?.team])
@@ -306,12 +332,14 @@ export default function App() {
     setSession(null)
   }
 
+  if (editingFraming) return <FrameEditor Portrait={Portrait} onClose={() => setEditingFraming(false)} />
   if (!session) {
     return (
       <Intro
         onStart={(team) => setSession({ team, history: [startSort(idsFor(team))] })}
         resumeTeam={saved?.team}
         onResume={saved ? () => setSession(saved) : null}
+        onEditFraming={() => setEditingFraming(true)}
       />
     )
   }
