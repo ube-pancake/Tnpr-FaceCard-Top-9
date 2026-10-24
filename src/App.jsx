@@ -3,6 +3,7 @@ import { activeSchools, players, schoolMap } from './data.js'
 import { TOP_COUNT, choose, currentPair, progress, startSort } from './sorter.js'
 import { frameFor, layoutFor, toStyle } from './framing.js'
 import FrameEditor from './FrameEditor.jsx'
+import { sendResult } from './results.js'
 
 const playerMap = Object.fromEntries(players.map((player) => [player.id, player]))
 const SAVE_KEY = 'favorite-faces-top9'
@@ -320,6 +321,20 @@ export default function App() {
     } catch {
       // storage unavailable
     }
+  }, [session, state])
+
+  // Count each finished sort once in the overall ranking.
+  const sentRef = useRef(null)
+  useEffect(() => {
+    if (!state?.done || sentRef.current === state) return
+    sentRef.current = state
+    sendResult({
+      team: teamLabel(session.team),
+      ranking: state.ranked.slice(0, TOP_COUNT).map((id, i) => {
+        const player = playerMap[id]
+        return { rank: i + 1, name: player.name, nameJa: player.nameJa, school: schoolMap[player.schoolId].name }
+      }),
+    })
   }, [session, state])
 
   const updateHistory = (update) => setSession((current) => ({ ...current, history: update(current.history) }))
