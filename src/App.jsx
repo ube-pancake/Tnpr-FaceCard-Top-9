@@ -70,9 +70,9 @@ function Intro({ onStart, resumeTeam, onResume }) {
         ))}
       </nav>
       <section className="intro-main">
-        <p className="eyebrow">TeniPuri Top9{team !== ALL && ` · ${teamLabel(team)}`}</p>
-        <h1>Favorite faces <span className="accent">Top {topCount}</span></h1>
-        <p className="sub">Compare photos and pick the face you like best.</p>
+        <p className="eyebrow">Prince of Tennis best face{team !== ALL && ` · ${teamLabel(team)}`}</p>
+        <h1><span className="accent">Top {topCount}</span> Faces</h1>
+        <p className="sub">Pick the face you like better.</p>
         <div className="grid3 preview">
           {preview.map((player) => <Portrait key={player.id} player={player} />)}
         </div>
@@ -148,7 +148,7 @@ function Result({ ranked, team, onRestart }) {
   const cells = order.map((rank) => ({ rank, player: playerMap[ranked[rank]] }))
   const rows = Math.ceil(cells.length / 3)
   const heading = `Top ${ranked.length}`
-  const subtitle = team === ALL ? 'TeniPuri Top9' : `TeniPuri Top9 · ${teamLabel(team)}`
+  const subtitle = team === ALL ? 'Prince of Tennis best face' : `Prince of Tennis best face · ${teamLabel(team)}`
 
   const saveImage = async () => {
     const size = 360
@@ -173,7 +173,7 @@ function Result({ ranked, team, onRestart }) {
     ctx.font = '700 34px sans-serif'
     ctx.fillText(subtitle, canvas.width / 2, 72)
     ctx.font = '800 60px sans-serif'
-    ctx.fillText(`My favorite faces ${heading.toUpperCase()}`, canvas.width / 2, 145)
+    ctx.fillText(`My ${heading} Faces`, canvas.width / 2, 145)
 
     const images = await Promise.all(cells.map(({ player }) => loadPortrait(player)))
     cells.forEach(({ rank, player }, i) => {
@@ -237,7 +237,7 @@ function Result({ ranked, team, onRestart }) {
   return (
     <main className="screen">
       <p className="eyebrow">Your result{team !== ALL && ` · ${teamLabel(team)}`}</p>
-      <h1>My favorite faces <span className="accent">{heading}</span></h1>
+      <h1>My <span className="accent">{heading}</span> Faces</h1>
       <div className="grid3 result">
         {cells.map(({ rank, player }) => (
           <figure key={player.id} className={rank === 0 ? 'first' : ''}>
