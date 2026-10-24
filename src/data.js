@@ -30,7 +30,7 @@ const roster = {
   u17: [
     'Houou Byodoin', 'Kazuya Tokugawa', 'Jujiro Oni', 'Kanata Irie', 'Shuji Tanegashima', 'Duke Watanabe', 'Ryoga Echizen',
     'Ryuji Omagari', 'Ikuto Kimijima', 'Atsukyo Tono', 'Tsukimitsu Ochi', 'Jusaburo Mori', 'Sotomichi Nakagauchi',
-    'Yudai Yamato', 'Shinobu Miyako', 'Chikahiko Matsudaira', 'Shun Suzuki', 'Issa Washio',
+    'Yudai Yamato', 'Shinobu Miyako', 'Chikahiko Matsudaira', 'Shun Suzuki', 'Issa Washio', 'Akuto Mitsuya',
   ],
   germany: ['Jurgen Borisovich Volk', 'Q.P.', 'Michael Bismarck', 'Elmar Siegfried', 'A. Frankensteiner', 'Dankmar Schneider', 'Belti B Volk'],
   france: ['Tristan Bardot', 'Timothee Moreau', 'Auguir Delon', 'Prince Ludwig Chardard', 'Edgar Delacroix', 'Jonathan Saint Georges'],
@@ -130,6 +130,7 @@ const japaneseNames = {
   'Chikahiko Matsudaira': '松平親彦',
   'Shun Suzuki': '鈴木 惷',
   'Issa Washio': '鷲尾一茶',
+  'Akuto Mitsuya': '三津谷あくと',
   'Jurgen Borisovich Volk': 'ユルゲン・バリーサヴィチ・ボルク',
   'Q.P.': 'Q・P',
   'Michael Bismarck': 'ミハエル・ビスマルク',
@@ -160,14 +161,19 @@ const japaneseNames = {
 
 const slugify = (value) => value.toLowerCase().replace(/[.']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
-// Teams shown on the site. U-17 and the World Cup teams are in the roster but hidden until their
-// photos are ready; add 'u17', 'germany', 'france', 'usa' and 'spain' here to show them.
-const ACTIVE_TEAMS = ['seigaku', 'fudomine', 'rudolph', 'yamabuki', 'hyoutei', 'rokkaku', 'rikkai', 'higa', 'shiten']
+// Teams shown on the site. The World Cup teams are in the roster but hidden until their photos are
+// ready; add 'germany', 'france', 'usa' and 'spain' here to show them.
+const ACTIVE_TEAMS = ['seigaku', 'fudomine', 'rudolph', 'yamabuki', 'hyoutei', 'rokkaku', 'rikkai', 'higa', 'shiten', 'u17']
+
+// Characters on a shown team who are left out until they have a photo. Remove a name once its photo is added.
+const AWAITING_PHOTO = [
+  'Duke Watanabe', 'Sotomichi Nakagauchi', 'Yudai Yamato', 'Shinobu Miyako', 'Chikahiko Matsudaira', 'Shun Suzuki', 'Issa Washio',
+]
 
 export const activeSchools = schools.filter((school) => !ACTIVE_TEAMS || ACTIVE_TEAMS.includes(school.id))
 
 export const players = Object.entries(roster).filter(([schoolId]) => !ACTIVE_TEAMS || ACTIVE_TEAMS.includes(schoolId)).flatMap(([schoolId, names]) =>
-  names.map((name, index) => ({
+  names.filter((name) => !AWAITING_PHOTO.includes(name)).map((name, index) => ({
     id: `${schoolId}-${slugify(name)}`,
     name,
     nameJa: japaneseNames[name],
