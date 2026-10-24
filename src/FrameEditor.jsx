@@ -62,7 +62,7 @@ export default function FrameEditor({ Portrait, onClose }) {
 
       <div className="framer-work">
         <div className="framer-source" onClick={pickFace}>
-          <img src={player.image} alt="" onError={(event) => { event.currentTarget.src = player.image.replace(/\.webp$/i, '.jpg') }} />
+          {player.image ? <img src={player.image} alt="" /> : <p className="sub">No photo yet</p>}
           <i className="marker" style={{ left: `${frame.x * 100}%`, top: `${frame.y * 100}%` }} />
         </div>
         <div className="framer-previews">

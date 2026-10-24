@@ -35,14 +35,23 @@ const loadSaved = () => {
   try {
     const saved = JSON.parse(localStorage.getItem(SAVE_KEY))
     const validTeam = saved?.team === ALL || activeSchools.some((school) => school.id === saved?.team)
-    if (validTeam && saved.history?.length && saved.history.every((state) => state.lostTo && state.round.every((id) => playerMap[id]))) return saved
+    if (!validTeam || !saved.history?.length) return null
+    // A save from before characters were added, removed or renamed can't be resumed safely.
+    const ids = idsFor(saved.team)
+    const known = (id) => playerMap[id]
+    const matches = (state) =>
+      state.lostTo &&
+      Object.keys(state.lostTo).length === ids.length &&
+      ids.every((id) => state.lostTo[id]) &&
+      [state.round, state.next, state.ranked, state.skipped || []].every((list) => Array.isArray(list) && list.every(known))
+    if (saved.history.every(matches)) return saved
   } catch {
     // ignore unreadable save data
   }
   return null
 }
 
-const sourcesFor = (player) => [player.image, player.image.replace(/\.webp$/i, '.png'), player.image.replace(/\.webp$/i, '.jpg')]
+const sourcesFor = (player) => (player.image ? [player.image] : [])
 
 // aspect is the box's width / height: 4:5 cards by default, 1 for the square result grid.
 function Portrait({ player, aspect = 0.8, frame, className = '' }) {
@@ -123,15 +132,19 @@ function Intro({ onStart, resumeTeam, onResume, onEditFraming }) {
 function Matchup({ state, history, count, team, onPick, onNeither, onBack, onHome }) {
   const { t, nameOf, altNameOf, teamName } = useT()
   const pair = currentPair(state)
-  // "Neither" can bring earlier losers back, which would make the estimate dip; only let it
-  // go down when the player steps back.
-  const best = useRef({ steps: 0, percent: 0 })
+  // "Neither" can bring earlier losers back, which would make the estimate dip; show the best
+  // value reached so far at or before this step, so it only goes down when the player steps back.
+  const best = useRef([])
   const estimate = progress(state, count)
-  const percent = history.length > best.current.steps ? Math.max(best.current.percent, estimate) : estimate
-  best.current = { steps: history.length, percent }
+  const percent = Math.max(estimate, ...best.current.slice(0, history.length - 1))
+  useEffect(() => {
+    best.current = [...best.current.slice(0, history.length - 1), percent]
+  }, [history.length, percent])
 
   useEffect(() => {
     const onKey = (event) => {
+      // Held-down keys and shortcuts like Alt+← (browser back) shouldn't count as picks.
+      if (event.repeat || event.altKey || event.ctrlKey || event.metaKey) return
       if (event.key === 'ArrowLeft') onPick(0)
       if (event.key === 'ArrowRight') onPick(1)
       if (event.key === 'ArrowDown' || event.key === 'n' || event.key === 'N') onNeither()
@@ -327,7 +340,9 @@ function Result({ ranked, team, onRestart }) {
     renderImage()
       .then((canvas) => new Promise((resolve) => canvas.toBlob(resolve, 'image/png')))
       .then((blob) => {
-        if (cancelled || !blob) return
+        if (cancelled) return
+        // toBlob gives null when the phone runs out of memory.
+        if (!blob) throw new Error('no image')
         url = URL.createObjectURL(blob)
         // A data URL for the press-and-hold view: some in-app browsers can't save blob: images.
         const reader = new FileReader()
@@ -336,7 +351,9 @@ function Result({ ranked, team, onRestart }) {
         }
         reader.readAsDataURL(blob)
       })
-      .catch(() => setNotice(t.imageFailed))
+      .catch(() => {
+        if (!cancelled) setNotice(t.imageFailed)
+      })
     return () => {
       cancelled = true
       if (url) URL.revokeObjectURL(url)
@@ -464,15 +481,31 @@ function Footer() {
   )
 }
 
-const initialTheme = () =>
-  document.documentElement.dataset.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+const darkQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+// The device's light/dark setting, kept up to date if it changes while the page is open.
+const useSystemTheme = () => {
+  const [system, setSystem] = useState(darkQuery.matches ? 'dark' : 'light')
+  useEffect(() => {
+    const onChange = (event) => setSystem(event.matches ? 'dark' : 'light')
+    darkQuery.addEventListener?.('change', onChange)
+    return () => darkQuery.removeEventListener?.('change', onChange)
+  }, [])
+  return system
+}
 
 export default function App() {
   const [session, setSession] = useState(null)
   const [saved, setSaved] = useState(loadSaved)
   const [editingFraming, setEditingFraming] = useState(false)
   const [lang, setLang] = useState(() => (readPref(LANG_KEY) === 'ja' ? 'ja' : 'en'))
-  const [theme, setTheme] = useState(initialTheme)
+  // A theme chosen with the toggle wins; until then the page follows the device.
+  const [chosenTheme, setChosenTheme] = useState(() => {
+    const stored = readPref(THEME_KEY)
+    return stored === 'dark' || stored === 'light' ? stored : null
+  })
+  const systemTheme = useSystemTheme()
+  const theme = chosenTheme || systemTheme
   const history = session?.history
   const state = history?.[history.length - 1]
   const ids = useMemo(() => (session ? idsFor(session.team) : []), [session?.team])
@@ -482,12 +515,14 @@ export default function App() {
     writePref(LANG_KEY, lang)
   }, [lang])
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
-  }, [theme])
+    if (chosenTheme) document.documentElement.dataset.theme = chosenTheme
+    else delete document.documentElement.dataset.theme
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#101016' : '#ffffff')
+  }, [chosenTheme, theme])
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark'
     writePref(THEME_KEY, next)
-    setTheme(next)
+    setChosenTheme(next)
   }
 
   useEffect(() => {

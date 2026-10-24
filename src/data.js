@@ -1,3 +1,5 @@
+import photos from 'virtual:photos'
+
 export const schools = [
   { id: 'seigaku', name: 'Seigaku', nameJa: '青学', short: 'SG', color: '#153fc0', accent: '#f5d23b' },
   { id: 'fudomine', name: 'Fudomine', nameJa: '不動峰', short: 'FD', color: '#22282b', accent: '#f27b35' },
@@ -179,7 +181,8 @@ export const players = Object.entries(roster).filter(([schoolId]) => !ACTIVE_TEA
     nameJa: japaneseNames[name],
     schoolId,
     seed: index,
-    image: `${import.meta.env.BASE_URL}players/${schoolId}/${slugify(name)}.webp`,
+    // null when there's no photo yet; the card then shows the team-colored initials.
+    image: photos[`${schoolId}/${slugify(name)}`] ? `${import.meta.env.BASE_URL}players/${schoolId}/${photos[`${schoolId}/${slugify(name)}`]}` : null,
   })),
 )
 

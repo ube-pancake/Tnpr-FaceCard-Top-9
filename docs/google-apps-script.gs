@@ -20,10 +20,11 @@ function doPost(e) {
     const results = sheet(RESULTS_SHEET, ['Time', 'Team', ...Array.from({ length: MAX_RANK }, (_, i) => `#${i + 1}`), SKIPPED_HEADER])
     // Sheets made before "Neither" existed have no header for the skipped column yet.
     if (!results.getRange(1, SKIPPED_COLUMN).getValue()) results.getRange(1, SKIPPED_COLUMN).setValue(SKIPPED_HEADER).setFontWeight('bold')
-    const names = ranking.map((entry) => String(entry.name || '').slice(0, 80))
+    const names = ranking.map((entry) => text(entry.name, 80))
     while (names.length < MAX_RANK) names.push('')
-    const skipped = Array.isArray(data.skipped) ? data.skipped.map((name) => String(name).slice(0, 80)).slice(0, 200) : []
-    results.appendRow([new Date(data.time || Date.now()), String(data.team || '').slice(0, 40), ...names, skipped.join(', ')])
+    const skipped = Array.isArray(data.skipped) ? data.skipped.slice(0, 200).map((name) => text(name, 80)) : []
+    const time = new Date(data.time)
+    results.appendRow([isNaN(time) ? new Date() : time, text(data.team, 40), ...names, text(skipped.join(', '), 5000)])
 
     rebuildRanking()
     return reply('ok')
@@ -81,6 +82,13 @@ function sheet(name, header) {
   return tab
 }
 
-function reply(text) {
-  return ContentService.createTextOutput(text)
+// The web app is open to anyone, so store every value as plain text: a leading ' stops Sheets
+// from running something like "=IMPORTXML(...)" as a formula.
+function text(value, maxLength) {
+  const cleaned = String(value == null ? '' : value).replace(/[\r\n\t]+/g, ' ').trim().slice(0, maxLength)
+  return /^[=+\-@]/.test(cleaned) ? `'${cleaned}` : cleaned
+}
+
+function reply(message) {
+  return ContentService.createTextOutput(message)
 }
