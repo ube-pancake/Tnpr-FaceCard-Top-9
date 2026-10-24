@@ -402,6 +402,11 @@ export default function App() {
     }
   }, [session, state])
 
+  // Download the whole team's photos up front so fast pickers never see a card still loading.
+  useEffect(() => {
+    if (session) playersFor(session.team).forEach((player) => loadPortrait(player))
+  }, [session?.team])
+
   // Count each finished sort once in the overall ranking.
   const sentRef = useRef(null)
   useEffect(() => {

@@ -7,6 +7,10 @@ import './styles.css'
 // to padding-based sizing under this class.
 if (!window.CSS?.supports?.('aspect-ratio', '1 / 1')) document.documentElement.classList.add('no-aspect')
 
+// Touch screens get no hover highlight (it sticks after a tap). Some in-app browsers, like Messenger,
+// claim a mouse, so count any touch support.
+if (navigator.maxTouchPoints > 0 || window.matchMedia('(any-pointer: coarse)').matches) document.documentElement.classList.add('touch')
+
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
