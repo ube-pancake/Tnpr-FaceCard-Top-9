@@ -38,7 +38,7 @@ function Portrait({ player, aspect = 0.8, frame, className = '' }) {
   return (
     <div
       className={`portrait ${className}`}
-      style={{ '--team': school.color, '--accent': school.accent, aspectRatio: aspect }}
+      style={{ '--team': school.color, '--accent': school.accent, '--pad': `${100 / aspect}%`, aspectRatio: aspect }}
       role="img"
       aria-label={player.name}
     >
