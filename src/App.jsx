@@ -4,14 +4,32 @@ import { TOP_COUNT, choose, chooseNeither, currentPair, progress, startSort } fr
 import { frameFor, layoutFor, toStyle } from './framing.js'
 import FrameEditor from './FrameEditor.jsx'
 import { sendResult } from './results.js'
+import { Accented, LangContext, useT } from './i18n.jsx'
 
 const playerMap = Object.fromEntries(players.map((player) => [player.id, player]))
 const SAVE_KEY = 'favorite-faces-top9'
+const LANG_KEY = 'favorite-faces-lang'
+const THEME_KEY = 'favorite-faces-theme'
+const WAVEBOX_URL = 'https://wavebox.me/wave/6vf81qelg8m318zr/'
 const ALL = 'all'
 
 const playersFor = (team) => players.filter((player) => team === ALL || player.schoolId === team)
 const idsFor = (team) => playersFor(team).map((player) => player.id)
-const teamLabel = (team) => (team === ALL ? 'All teams' : schoolMap[team].name)
+
+const readPref = (key) => {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+const writePref = (key, value) => {
+  try {
+    localStorage.setItem(key, value)
+  } catch {
+    // storage unavailable
+  }
+}
 
 const loadSaved = () => {
   try {
@@ -62,16 +80,17 @@ function Portrait({ player, aspect = 0.8, frame, className = '' }) {
 }
 
 function Intro({ onStart, resumeTeam, onResume, onEditFraming }) {
+  const { t, teamName } = useT()
   const [team, setTeam] = useState(ALL)
   const pool = playersFor(team)
   const preview = useMemo(() => [...playersFor(team)].sort(() => Math.random() - 0.5).slice(0, 9), [team])
   const topCount = Math.min(TOP_COUNT, pool.length)
-  const options = [{ id: ALL, name: 'All teams', color: null }, ...activeSchools]
+  const options = [{ id: ALL, color: null }, ...activeSchools]
 
   return (
     <main className="screen intro">
-      <nav className="teams" aria-label="Choose a team">
-        <p className="teams-title">Sort by team</p>
+      <nav className="teams" aria-label={t.chooseTeam}>
+        <p className="teams-title">{t.sortByTeam}</p>
         {options.map((option) => (
           <button
             key={option.id}
@@ -80,21 +99,21 @@ function Intro({ onStart, resumeTeam, onResume, onEditFraming }) {
             onClick={() => setTeam(option.id)}
           >
             <i style={{ background: option.color || 'linear-gradient(135deg, var(--violet), var(--pink))' }} />
-            <span>{option.name}</span>
+            <span>{teamName(option.id)}</span>
             <small>{playersFor(option.id).length}</small>
           </button>
         ))}
       </nav>
       <section className="intro-main">
-        <p className="eyebrow">Prince of Tennis best face{team !== ALL && ` · ${teamLabel(team)}`}</p>
-        <h1><span className="accent">Top {topCount}</span> Faces</h1>
-        <p className="sub">Pick the face you like better.</p>
+        <p className="eyebrow">{t.brand}{team !== ALL && ` · ${teamName(team)}`}</p>
+        <h1><Accented parts={t.title(topCount)} /></h1>
+        <p className="sub">{t.sub}</p>
         <div className="grid3 preview">
           {preview.map((player) => <Portrait key={player.id} player={player} />)}
         </div>
-        <p className="count">Your Top {topCount} from {pool.length} characters{team !== ALL && ` in ${teamLabel(team)}`}.</p>
-        <button className="primary" onClick={() => onStart(team)}>Start →</button>
-        {onResume && <button className="link" onClick={onResume}>Resume where I left off ({teamLabel(resumeTeam)})</button>}
+        <p className="count">{t.count(topCount, pool.length, team !== ALL && teamName(team))}</p>
+        <button className="primary" onClick={() => onStart(team)}>{t.start}</button>
+        {onResume && <button className="link" onClick={onResume}>{t.resume(teamName(resumeTeam))}</button>}
         {import.meta.env.DEV && <button className="link" onClick={onEditFraming}>Adjust photo framing (local only)</button>}
       </section>
     </main>
@@ -102,6 +121,7 @@ function Intro({ onStart, resumeTeam, onResume, onEditFraming }) {
 }
 
 function Matchup({ state, history, count, team, onPick, onNeither, onBack, onHome }) {
+  const { t, nameOf, altNameOf, teamName } = useT()
   const pair = currentPair(state)
   // "Neither" can bring earlier losers back, which would make the estimate dip; only let it
   // go down when the player steps back.
@@ -123,31 +143,31 @@ function Matchup({ state, history, count, team, onPick, onNeither, onBack, onHom
   return (
     <main className="screen">
       <div className="topbar">
-        <button className="home" onClick={onHome}>⌂ Home</button>
-        <span>{teamLabel(team)}</span>
+        <button className="home" onClick={onHome}>{t.home}</button>
+        <span>{teamName(team)}</span>
       </div>
       <div className="progress"><span>{percent}%</span><div className="bar"><i style={{ width: `${percent}%` }} /></div></div>
-      <h2>Which face do you like best?</h2>
+      <h2>{t.question}</h2>
       <div className="duel">
         {pair.map((id, side) => {
           const player = playerMap[id]
           return (
             <button key={id} className="card" onClick={() => onPick(side)}>
               <Portrait player={player} />
-              <span className="name">{player.name}</span>
-              <span className="meta">{player.nameJa}</span>
-              <span className="meta">{schoolMap[player.schoolId].name}</span>
+              <span className="name">{nameOf(player)}</span>
+              <span className="meta">{altNameOf(player)}</span>
+              <span className="meta">{teamName(player.schoolId)}</span>
             </button>
           )
         })}
       </div>
       <div className="choices">
-        <button className="choice back" onClick={onBack} disabled={history.length < 2}>← Back</button>
+        <button className="choice back" onClick={onBack} disabled={history.length < 2}>{t.back}</button>
         <button className="choice neither" onClick={onNeither}>
-          <span className="choice-hint">Like neither?</span> Skip both ✕
+          <span className="choice-hint">{t.neitherHint}</span> {t.neither}
         </button>
       </div>
-      <p className="keys">Keyboard: ← left · → right · ↓ neither</p>
+      <p className="keys">{t.keys}</p>
     </main>
   )
 }
@@ -190,15 +210,27 @@ const roundRect = (ctx, x, y, w, h, r) => {
   ctx.closePath()
 }
 
+// Shrinks the font until the text fits, so long names don't spill into the next cell.
+const fitText = (ctx, text, x, y, maxWidth, weight, size) => {
+  let fontSize = size
+  ctx.font = `${weight} ${fontSize}px sans-serif`
+  while (fontSize > 14 && ctx.measureText(text).width > maxWidth) {
+    fontSize -= 1
+    ctx.font = `${weight} ${fontSize}px sans-serif`
+  }
+  ctx.fillText(text, x, y)
+}
+
 function Result({ ranked, team, onRestart }) {
+  const { lang, t, nameOf, altNameOf, teamName } = useT()
   const [notice, setNotice] = useState('')
   // Smaller teams can't fill the 3×3 layout, so they're shown in plain rank order.
   const order = ranked.length >= GRID_ORDER.length ? GRID_ORDER : ranked.map((_, rank) => rank)
   const cells = order.map((rank) => ({ rank, player: playerMap[ranked[rank]] }))
   const rows = Math.ceil(cells.length / 3)
-  const heading = `Top ${ranked.length}`
-  const subtitle = team === ALL ? 'Prince of Tennis best face' : `Prince of Tennis best face · ${teamLabel(team)}`
+  const subtitle = team === ALL ? t.brand : `${t.brand} · ${teamName(team)}`
 
+  // The saved image is always light, whatever the page theme, so it looks the same when shared.
   const renderImage = async () => {
     const size = 360
     const gap = 24
@@ -222,7 +254,7 @@ function Result({ ranked, team, onRestart }) {
     ctx.font = '700 34px sans-serif'
     ctx.fillText(subtitle, canvas.width / 2, 72)
     ctx.font = '800 60px sans-serif'
-    ctx.fillText(`My ${heading} Faces`, canvas.width / 2, 145)
+    ctx.fillText(t.imageTitle(ranked.length), canvas.width / 2, 145)
 
     const images = await Promise.all(cells.map(({ player }) => loadPortrait(player)))
     cells.forEach(({ rank, player }, i) => {
@@ -265,34 +297,33 @@ function Result({ ranked, team, onRestart }) {
       }
       ctx.restore()
 
+      const rankLabel = t.rank(rank + 1)
       const pillW = first ? 96 : 76
       ctx.fillStyle = first ? gradient(x + 16, y + 16, pillW, 44) : 'rgba(255,255,255,.95)'
       ctx.beginPath()
       roundRect(ctx, x + 16, y + 16, pillW, 44, 22)
       ctx.fill()
       ctx.fillStyle = first ? '#fff' : '#16161d'
-      ctx.font = '800 26px sans-serif'
-      ctx.fillText(`#${rank + 1}`, x + 16 + pillW / 2, y + 47)
+      fitText(ctx, rankLabel, x + 16 + pillW / 2, y + 47, pillW - 12, 800, 26)
 
       ctx.fillStyle = '#16161d'
-      ctx.font = `800 ${first ? 30 : 26}px sans-serif`
-      ctx.fillText(player.name, x + size / 2, y + size + 40)
+      fitText(ctx, nameOf(player), x + size / 2, y + size + 40, size, 800, first ? 30 : 26)
       ctx.fillStyle = '#8a8a96'
-      ctx.font = '500 20px sans-serif'
-      ctx.fillText(school.name, x + size / 2, y + size + 70)
+      fitText(ctx, teamName(player.schoolId), x + size / 2, y + size + 70, size, 500, 20)
     })
 
     return canvas
   }
 
   // Build the image as soon as the result shows. Phones only allow saving or sharing straight
-  // from a tap, so the tap must not wait on loading photos.
+  // from a tap, so the tap must not wait on loading photos. Rebuilt when the language changes.
   const fileName = `my-top-${ranked.length}${team === ALL ? '' : `-${team}`}.png`
   const [image, setImage] = useState(null)
   const [preview, setPreview] = useState(false)
   useEffect(() => {
     let url = null
     let cancelled = false
+    setImage(null)
     renderImage()
       .then((canvas) => new Promise((resolve) => canvas.toBlob(resolve, 'image/png')))
       .then((blob) => {
@@ -305,12 +336,12 @@ function Result({ ranked, team, onRestart }) {
         }
         reader.readAsDataURL(blob)
       })
-      .catch(() => setNotice('Could not create the image'))
+      .catch(() => setNotice(t.imageFailed))
     return () => {
       cancelled = true
       if (url) URL.revokeObjectURL(url)
     }
-  }, [])
+  }, [lang])
 
   const saveImage = async () => {
     if (!image) return
@@ -321,7 +352,7 @@ function Result({ ranked, team, onRestart }) {
     const shareable = isTouchDevice() && navigator.canShare?.({ files: [image.file] })
     if (shareable) {
       try {
-        await navigator.share({ files: [image.file], title: `My ${heading} Faces` })
+        await navigator.share({ files: [image.file], title: t.imageTitle(ranked.length) })
         setNotice('')
         return
       } catch (error) {
@@ -339,43 +370,43 @@ function Result({ ranked, team, onRestart }) {
     document.body.appendChild(link)
     link.click()
     link.remove()
-    setNotice('Download started. Check your Downloads folder.')
+    setNotice(t.downloadStarted)
   }
 
   return (
     <main className="screen">
-      <p className="eyebrow">Your result{team !== ALL && ` · ${teamLabel(team)}`}</p>
-      <h1>My <span className="accent">{heading}</span> Faces</h1>
+      <p className="eyebrow">{t.yourResult}{team !== ALL && ` · ${teamName(team)}`}</p>
+      <h1><Accented parts={t.resultTitle(ranked.length)} /></h1>
       <div className="grid3 result">
         {cells.map(({ rank, player }) => (
           <figure key={player.id} className={rank === 0 ? 'first' : ''}>
             <div className="frame">
               <Portrait player={player} aspect={1} />
-              <b className="rank">#{rank + 1}</b>
+              <b className="rank">{t.rank(rank + 1)}</b>
             </div>
             <figcaption>
-              <span className="name">{player.name}</span>
-              <span className="meta">{schoolMap[player.schoolId].name}</span>
+              <span className="name">{nameOf(player)}</span>
+              <span className="meta">{teamName(player.schoolId)}</span>
             </figcaption>
           </figure>
         ))}
       </div>
       <div className="actions">
-        <button className="primary" onClick={saveImage} disabled={!image}>{image ? 'Save image' : 'Preparing image…'}</button>
-        <button className="secondary" onClick={onRestart}>Start over</button>
+        <button className="primary" onClick={saveImage} disabled={!image}>{image ? t.save : t.preparing}</button>
+        <button className="secondary" onClick={onRestart}>{t.startOver}</button>
       </div>
       <p className="notice" role="status">{notice}</p>
       <section className="ranking">
-        <h2>{heading.toUpperCase()}</h2>
+        <h2>{`TOP ${ranked.length}`}</h2>
         <ol>
           {ranked.map((id, i) => {
             const player = playerMap[id]
             return (
               <li key={id}>
-                <b>#{i + 1}</b>
+                <b>{t.rank(i + 1)}</b>
                 <span>
-                  <span className="name">{player.name}<small>{player.nameJa}</small></span>
-                  <span className="meta">{schoolMap[player.schoolId].name}</span>
+                  <span className="name">{nameOf(player)}<small>{altNameOf(player)}</small></span>
+                  <span className="meta">{teamName(player.schoolId)}</span>
                 </span>
               </li>
             )
@@ -383,26 +414,81 @@ function Result({ ranked, team, onRestart }) {
         </ol>
       </section>
       {preview && image && (
-        <div className="save-preview" role="dialog" aria-label="Save your image" onClick={() => setPreview(false)}>
-          <p>Press and hold the image, then choose <b>Save to Photos</b> or <b>Download image</b>.</p>
-          {isInAppBrowser() && (
-            <p className="tip">Not working? Open this page in Chrome or Safari: tap <b>⋯</b> and choose <b>Open in browser</b>.</p>
-          )}
-          <img src={image.dataUrl} alt={`My ${heading} Faces`} onClick={(event) => event.stopPropagation()} />
-          <button className="secondary" onClick={() => setPreview(false)}>Close</button>
+        <div className="save-preview" role="dialog" aria-label={t.saveDialog} onClick={() => setPreview(false)}>
+          <p>{t.pressHold}</p>
+          {isInAppBrowser() && <p className="tip">{t.inAppTip}</p>}
+          <img src={image.dataUrl} alt={t.imageTitle(ranked.length)} onClick={(event) => event.stopPropagation()} />
+          <button className="secondary" onClick={() => setPreview(false)}>{t.close}</button>
         </div>
       )}
     </main>
   )
 }
 
+function Empty({ team, onUndo, onRestart }) {
+  const { t, teamName } = useT()
+  return (
+    <main className="screen">
+      <p className="eyebrow">{t.yourResult}{team !== ALL && ` · ${teamName(team)}`}</p>
+      <h1>{t.noFaces}</h1>
+      <p className="sub">{t.noFacesSub}</p>
+      <div className="actions">
+        <button className="primary" onClick={onUndo}>{t.undo}</button>
+        <button className="secondary" onClick={onRestart}>{t.startOver}</button>
+      </div>
+    </main>
+  )
+}
+
+// Language and theme switches, shown at the top of every screen.
+function Preferences({ theme, onToggleTheme, onToggleLang }) {
+  const { t } = useT()
+  const dark = theme === 'dark'
+  return (
+    <div className="prefs">
+      <button className="pref" onClick={onToggleLang} aria-label={t.otherLanguageLabel}>{t.otherLanguage}</button>
+      <button className="pref" onClick={onToggleTheme} aria-pressed={dark} aria-label={dark ? t.lightMode : t.darkMode}>
+        {dark ? '☀' : '☾'} <span>{dark ? t.lightMode : t.darkMode}</span>
+      </button>
+    </div>
+  )
+}
+
+function Footer() {
+  const { t } = useT()
+  return (
+    <footer className="footer">
+      <p>{t.footer}</p>
+      <p>🎾 <a href={WAVEBOX_URL} target="_blank" rel="noopener noreferrer">wavebox</a> 🎾</p>
+    </footer>
+  )
+}
+
+const initialTheme = () =>
+  document.documentElement.dataset.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+
 export default function App() {
   const [session, setSession] = useState(null)
   const [saved, setSaved] = useState(loadSaved)
   const [editingFraming, setEditingFraming] = useState(false)
+  const [lang, setLang] = useState(() => (readPref(LANG_KEY) === 'ja' ? 'ja' : 'en'))
+  const [theme, setTheme] = useState(initialTheme)
   const history = session?.history
   const state = history?.[history.length - 1]
   const ids = useMemo(() => (session ? idsFor(session.team) : []), [session?.team])
+
+  useEffect(() => {
+    document.documentElement.lang = lang
+    writePref(LANG_KEY, lang)
+  }, [lang])
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+  }, [theme])
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    writePref(THEME_KEY, next)
+    setTheme(next)
+  }
 
   useEffect(() => {
     try {
@@ -419,14 +505,14 @@ export default function App() {
     if (session) playersFor(session.team).forEach((player) => loadPortrait(player))
   }, [session?.team])
 
-  // Count each finished sort once in the overall ranking.
+  // Count each finished sort once in the overall ranking (always in English, whatever the page language).
   const sentRef = useRef(null)
   useEffect(() => {
     // An empty result can still be undone, so only finished rankings with someone in them count.
     if (!state?.done || !state.ranked.length || sentRef.current === state) return
     sentRef.current = state
     sendResult({
-      team: teamLabel(session.team),
+      team: session.team === ALL ? 'All teams' : schoolMap[session.team].name,
       ranking: state.ranked.slice(0, TOP_COUNT).map((id, i) => {
         const player = playerMap[id]
         return { rank: i + 1, name: player.name, nameJa: player.nameJa, school: schoolMap[player.schoolId].name }
@@ -449,9 +535,11 @@ export default function App() {
     setSession(null)
   }
 
-  if (editingFraming) return <FrameEditor Portrait={Portrait} onClose={() => setEditingFraming(false)} />
-  if (!session) {
-    return (
+  let screen
+  if (editingFraming) {
+    screen = <FrameEditor Portrait={Portrait} onClose={() => setEditingFraming(false)} />
+  } else if (!session) {
+    screen = (
       <Intro
         onStart={(team) => setSession({ team, history: [startSort(idsFor(team))] })}
         resumeTeam={saved?.team}
@@ -459,31 +547,30 @@ export default function App() {
         onEditFraming={() => setEditingFraming(true)}
       />
     )
-  }
-  if (state.done && !state.ranked.length) {
-    return (
-      <main className="screen">
-        <p className="eyebrow">Your result{session.team !== ALL && ` · ${teamLabel(session.team)}`}</p>
-        <h1>No faces picked</h1>
-        <p className="sub">You chose "Neither" for everyone, so there's no Top 9 this time.</p>
-        <div className="actions">
-          <button className="primary" onClick={() => updateHistory((current) => current.slice(0, -1))}>← Undo last choice</button>
-          <button className="secondary" onClick={restart}>Start over</button>
-        </div>
-      </main>
+  } else if (state.done && !state.ranked.length) {
+    screen = <Empty team={session.team} onUndo={() => updateHistory((current) => current.slice(0, -1))} onRestart={restart} />
+  } else if (state.done) {
+    screen = <Result ranked={state.ranked.slice(0, TOP_COUNT)} team={session.team} onRestart={restart} />
+  } else {
+    screen = (
+      <Matchup
+        state={state}
+        history={history}
+        count={ids.length}
+        team={session.team}
+        onPick={pick}
+        onNeither={pickNeither}
+        onBack={() => updateHistory((current) => current.slice(0, -1))}
+        onHome={restart}
+      />
     )
   }
-  if (state.done) return <Result ranked={state.ranked.slice(0, TOP_COUNT)} team={session.team} onRestart={restart} />
+
   return (
-    <Matchup
-      state={state}
-      history={history}
-      count={ids.length}
-      team={session.team}
-      onPick={pick}
-      onNeither={pickNeither}
-      onBack={() => updateHistory((current) => current.slice(0, -1))}
-      onHome={restart}
-    />
+    <LangContext.Provider value={lang}>
+      <Preferences theme={theme} onToggleTheme={toggleTheme} onToggleLang={() => setLang(lang === 'ja' ? 'en' : 'ja')} />
+      {screen}
+      <Footer />
+    </LangContext.Provider>
   )
 }
