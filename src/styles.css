@@ -61,6 +61,20 @@ html:not(.touch) .team:hover { background: var(--soft); }
 .link { display: block; margin: 16px auto 0; border: 0; background: none; color: var(--muted); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
 .link:disabled { opacity: .35; cursor: default; text-decoration: none; }
 
+/* Back and Neither sit well below the cards, as full buttons, so they're easy to see and hard to hit by accident. */
+.choices { display: flex; justify-content: center; align-items: stretch; margin-top: 22px; }
+.choice { min-height: 48px; padding: 10px 18px; border-radius: 14px; font-size: 15px; font-weight: 800; }
+.choice + .choice { margin-left: 12px; }
+.choice.back { border: 2px solid var(--line); background: #fff; color: var(--ink); }
+.choice.back:disabled { opacity: .4; cursor: default; }
+.choice.neither { display: flex; align-items: center; border: 2px solid var(--ink); background: var(--ink); color: #fff; }
+.choice-hint { margin-right: 8px; font-size: 12px; font-weight: 600; opacity: .75; }
+html:not(.touch) .choice.back:not(:disabled):hover { border-color: var(--violet); }
+html:not(.touch) .choice.neither:hover { background: #2c2c38; }
+.choice:active:not(:disabled) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--violet) 30%, transparent); }
+.keys { margin: 14px 0 0; font-size: 12px; color: var(--muted); }
+.touch .keys { display: none; }
+
 .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; font-size: 13px; color: var(--muted); }
 .home { padding: 6px 12px; border: 1px solid var(--line); border-radius: 99px; background: #fff; font-size: 13px; font-weight: 700; }
 html:not(.touch) .home:hover { border-color: var(--violet); color: #4b3fd6; }
@@ -70,14 +84,14 @@ html:not(.touch) .home:hover { border-color: var(--violet); color: #4b3fd6; }
 .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--violet), var(--pink)); transition: width .25s; }
 
 .duel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.card { display: block; width: 100%; padding: 6px 6px 12px; border: 2px solid var(--line); border-radius: 14px; background: #fff; text-align: left; transition: transform .12s, border-color .12s; }
+.card { display: block; width: 100%; padding: 6px 6px 12px; border: 2px solid var(--line); border-radius: 14px; background: #fff; text-align: left; transition: border-color .12s, box-shadow .12s; }
 /* Hover highlight only for mouse users: on touch screens it sticks to whichever card was under the finger. */
-html:not(.touch) .card:hover, .card:focus-visible { border-color: var(--violet); transform: translateY(-2px); outline: none; }
-.card:active { border-color: var(--violet); transform: scale(.98); }
+html:not(.touch) .card:hover, .card:focus-visible { border-color: var(--violet); outline: none; }
+.card:active { border-color: var(--violet); box-shadow: 0 0 0 3px color-mix(in srgb, var(--violet) 25%, transparent); }
 .card { text-align: center; }
 .card > * { display: block; width: 100%; text-align: center; }
 .card .meta + .meta { margin-top: 2px; }
-.card .name { margin-top: 8px; padding: 0 6px; font-weight: 800; font-size: 18px; line-height: 1.25; }
+.card .name { min-height: 2.5em; margin-top: 8px; padding: 0 6px; font-weight: 800; font-size: 18px; line-height: 1.25; }
 .card .meta { padding: 0 6px; font-size: 12px; color: var(--muted); }
 
 .result { gap: 14px 10px; padding: 14px 10px; background: #fff; border: 1px solid var(--line); }

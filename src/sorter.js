@@ -12,25 +12,37 @@ const shuffle = (items) => {
   return list
 }
 
-// Moves the state forward until a real matchup is waiting, or the top list is full.
+// "Neither" records a loss to this marker, which removes both characters from the sort. Anyone
+// they had beaten is no longer held back by them and can come back into contention.
+const NOBODY = '__nobody__'
+
+// Moves the state forward until a real matchup is waiting, or the top list is full. A list can
+// end short of TOP_COUNT when "Neither" removes too many characters.
 const settle = (state, ids) => {
   let { round, next, index, ranked, lostTo, picks } = state
+  const skipped = state.skipped || []
+  const finish = (done) => ({ round, next, index, ranked, lostTo, picks, skipped, done })
+  const removed = (id) => lostTo[id].includes(NOBODY)
+  // Still in contention: unranked, not removed, and beaten only by ranked or removed characters.
+  const contenders = () => {
+    const rankedSet = new Set(ranked)
+    const isContender = (id) => !rankedSet.has(id) && !removed(id) && lostTo[id].every((winner) => rankedSet.has(winner) || removed(winner))
+    const winners = next.filter(isContender)
+    return [...winners, ...ids.filter((id) => isContender(id) && !winners.includes(id))]
+  }
   for (;;) {
-    if (ranked.length >= Math.min(TOP_COUNT, ids.length)) return { round, next, index, ranked, lostTo, picks, done: true }
+    if (ranked.length >= Math.min(TOP_COUNT, ids.length)) return finish(true)
     if (index >= round.length) {
-      if (next.length === 1) {
-        ranked = [...ranked, next[0]]
-        const rankedSet = new Set(ranked)
-        round = ids.filter((id) => !rankedSet.has(id) && lostTo[id].every((winner) => rankedSet.has(winner)))
-      } else {
-        round = next
+      // Round over. Without "Neither" the contenders are exactly this round's winners.
+      let pool = contenders()
+      if (pool.length === 1) {
+        ranked = [...ranked, pool[0]]
+        pool = contenders()
       }
+      if (!pool.length) return finish(true)
+      round = pool
       next = []
       index = 0
-      if (round.length === 1) {
-        next = round
-        index = 1
-      }
       continue
     }
     if (index + 1 >= round.length) {
@@ -38,7 +50,7 @@ const settle = (state, ids) => {
       index += 2
       continue
     }
-    return { round, next, index, ranked, lostTo, picks, done: false }
+    return finish(false)
   }
 }
 
@@ -55,6 +67,12 @@ export const choose = (state, ids, side) => {
   const loser = side === 0 ? b : a
   const lostTo = { ...state.lostTo, [loser]: [...state.lostTo[loser], winner] }
   return settle({ ...state, lostTo, next: [...state.next, winner], index: state.index + 2, picks: state.picks + 1 }, ids)
+}
+
+export const chooseNeither = (state, ids) => {
+  const [a, b] = currentPair(state)
+  const lostTo = { ...state.lostTo, [a]: [...state.lostTo[a], NOBODY], [b]: [...state.lostTo[b], NOBODY] }
+  return settle({ ...state, lostTo, skipped: [...(state.skipped || []), a, b], index: state.index + 2, picks: state.picks + 1 }, ids)
 }
 
 // Picks left to crown the current leader, plus roughly log2(unranked) - 1 picks for each later rank.

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { activeSchools, players, schoolMap } from './data.js'
-import { TOP_COUNT, choose, currentPair, progress, startSort } from './sorter.js'
+import { TOP_COUNT, choose, chooseNeither, currentPair, progress, startSort } from './sorter.js'
 import { frameFor, layoutFor, toStyle } from './framing.js'
 import FrameEditor from './FrameEditor.jsx'
 import { sendResult } from './results.js'
@@ -101,18 +101,24 @@ function Intro({ onStart, resumeTeam, onResume, onEditFraming }) {
   )
 }
 
-function Matchup({ state, history, count, team, onPick, onBack, onHome }) {
+function Matchup({ state, history, count, team, onPick, onNeither, onBack, onHome }) {
   const pair = currentPair(state)
-  const percent = progress(state, count)
+  // "Neither" can bring earlier losers back, which would make the estimate dip; only let it
+  // go down when the player steps back.
+  const best = useRef({ steps: 0, percent: 0 })
+  const estimate = progress(state, count)
+  const percent = history.length > best.current.steps ? Math.max(best.current.percent, estimate) : estimate
+  best.current = { steps: history.length, percent }
 
   useEffect(() => {
     const onKey = (event) => {
       if (event.key === 'ArrowLeft') onPick(0)
       if (event.key === 'ArrowRight') onPick(1)
+      if (event.key === 'ArrowDown' || event.key === 'n' || event.key === 'N') onNeither()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onPick])
+  }, [onPick, onNeither])
 
   return (
     <main className="screen">
@@ -135,7 +141,13 @@ function Matchup({ state, history, count, team, onPick, onBack, onHome }) {
           )
         })}
       </div>
-      <button className="link" onClick={onBack} disabled={history.length < 2}>← Back</button>
+      <div className="choices">
+        <button className="choice back" onClick={onBack} disabled={history.length < 2}>← Back</button>
+        <button className="choice neither" onClick={onNeither}>
+          <span className="choice-hint">Like neither?</span> Skip both ✕
+        </button>
+      </div>
+      <p className="keys">Keyboard: ← left · → right · ↓ neither</p>
     </main>
   )
 }
@@ -410,7 +422,8 @@ export default function App() {
   // Count each finished sort once in the overall ranking.
   const sentRef = useRef(null)
   useEffect(() => {
-    if (!state?.done || sentRef.current === state) return
+    // An empty result can still be undone, so only finished rankings with someone in them count.
+    if (!state?.done || !state.ranked.length || sentRef.current === state) return
     sentRef.current = state
     sendResult({
       team: teamLabel(session.team),
@@ -418,6 +431,7 @@ export default function App() {
         const player = playerMap[id]
         return { rank: i + 1, name: player.name, nameJa: player.nameJa, school: schoolMap[player.schoolId].name }
       }),
+      skipped: (state.skipped || []).map((id) => playerMap[id].name),
     })
   }, [session, state])
 
@@ -425,6 +439,10 @@ export default function App() {
   const pick = (side) => updateHistory((current) => {
     const latest = current[current.length - 1]
     return latest.done ? current : [...current, choose(latest, ids, side)]
+  })
+  const pickNeither = () => updateHistory((current) => {
+    const latest = current[current.length - 1]
+    return latest.done ? current : [...current, chooseNeither(latest, ids)]
   })
   const restart = () => {
     setSaved(loadSaved())
@@ -442,6 +460,19 @@ export default function App() {
       />
     )
   }
+  if (state.done && !state.ranked.length) {
+    return (
+      <main className="screen">
+        <p className="eyebrow">Your result{session.team !== ALL && ` · ${teamLabel(session.team)}`}</p>
+        <h1>No faces picked</h1>
+        <p className="sub">You chose "Neither" for everyone, so there's no Top 9 this time.</p>
+        <div className="actions">
+          <button className="primary" onClick={() => updateHistory((current) => current.slice(0, -1))}>← Undo last choice</button>
+          <button className="secondary" onClick={restart}>Start over</button>
+        </div>
+      </main>
+    )
+  }
   if (state.done) return <Result ranked={state.ranked.slice(0, TOP_COUNT)} team={session.team} onRestart={restart} />
   return (
     <Matchup
@@ -450,6 +481,7 @@ export default function App() {
       count={ids.length}
       team={session.team}
       onPick={pick}
+      onNeither={pickNeither}
       onBack={() => updateHistory((current) => current.slice(0, -1))}
       onHome={restart}
     />

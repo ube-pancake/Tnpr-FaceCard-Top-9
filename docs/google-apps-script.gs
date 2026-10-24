@@ -6,6 +6,8 @@
 const RESULTS_SHEET = 'Results'
 const RANKING_SHEET = 'Ranking'
 const MAX_RANK = 9
+const SKIPPED_COLUMN = MAX_RANK + 3 // column L, right after #9
+const SKIPPED_HEADER = 'Skipped (Neither)'
 
 function doPost(e) {
   const lock = LockService.getScriptLock()
@@ -15,10 +17,13 @@ function doPost(e) {
     const ranking = Array.isArray(data.ranking) ? data.ranking.slice(0, MAX_RANK) : []
     if (!ranking.length) return reply('empty')
 
-    const results = sheet(RESULTS_SHEET, ['Time', 'Team', ...Array.from({ length: MAX_RANK }, (_, i) => `#${i + 1}`)])
+    const results = sheet(RESULTS_SHEET, ['Time', 'Team', ...Array.from({ length: MAX_RANK }, (_, i) => `#${i + 1}`), SKIPPED_HEADER])
+    // Sheets made before "Neither" existed have no header for the skipped column yet.
+    if (!results.getRange(1, SKIPPED_COLUMN).getValue()) results.getRange(1, SKIPPED_COLUMN).setValue(SKIPPED_HEADER).setFontWeight('bold')
     const names = ranking.map((entry) => String(entry.name || '').slice(0, 80))
     while (names.length < MAX_RANK) names.push('')
-    results.appendRow([new Date(data.time || Date.now()), String(data.team || '').slice(0, 40), ...names])
+    const skipped = Array.isArray(data.skipped) ? data.skipped.map((name) => String(name).slice(0, 80)).slice(0, 200) : []
+    results.appendRow([new Date(data.time || Date.now()), String(data.team || '').slice(0, 40), ...names, skipped.join(', ')])
 
     rebuildRanking()
     return reply('ok')
@@ -28,30 +33,36 @@ function doPost(e) {
 }
 
 // Points: #1 gets 9, #2 gets 8 … #9 gets 1. Ties broken by number of #1 finishes.
+// "Neither picks" counts how often a character was skipped with the Neither button.
 function rebuildRanking() {
   const results = sheet(RESULTS_SHEET)
-  const rows = results.getLastRow() > 1 ? results.getRange(2, 3, results.getLastRow() - 1, MAX_RANK).getValues() : []
+  const rowCount = results.getLastRow() - 1
+  const rows = rowCount > 0 ? results.getRange(2, 3, rowCount, MAX_RANK).getValues() : []
+  const skippedCells = rowCount > 0 ? results.getRange(2, SKIPPED_COLUMN, rowCount, 1).getValues() : []
   const stats = {}
+  const entryFor = (name) => stats[name] || (stats[name] = { points: 0, firsts: 0, top3: 0, appearances: 0, rankSum: 0, skips: 0 })
   rows.forEach((row) => row.forEach((name, i) => {
     if (!name) return
-    const entry = stats[name] || (stats[name] = { points: 0, firsts: 0, top3: 0, appearances: 0, rankSum: 0 })
+    const entry = entryFor(name)
     entry.points += MAX_RANK - i
     entry.appearances += 1
     entry.rankSum += i + 1
     if (i === 0) entry.firsts += 1
     if (i < 3) entry.top3 += 1
   }))
+  skippedCells.forEach(([cell]) => String(cell || '').split(',').map((name) => name.trim()).filter(Boolean).forEach((name) => { entryFor(name).skips += 1 }))
 
+  const columns = ['Rank', 'Character', 'Points', '#1 finishes', 'Top 3 finishes', 'Top 9 finishes', 'Average rank', 'Neither picks']
   const table = Object.keys(stats)
     .map((name) => [name, stats[name]])
-    .sort((a, b) => b[1].points - a[1].points || b[1].firsts - a[1].firsts)
-    .map(([name, s], i) => [i + 1, name, s.points, s.firsts, s.top3, s.appearances, Math.round((s.rankSum / s.appearances) * 10) / 10])
+    .sort((a, b) => b[1].points - a[1].points || b[1].firsts - a[1].firsts || a[1].skips - b[1].skips)
+    .map(([name, s], i) => [i + 1, name, s.points, s.firsts, s.top3, s.appearances, s.appearances ? Math.round((s.rankSum / s.appearances) * 10) / 10 : '', s.skips])
 
   const ranking = sheet(RANKING_SHEET)
   ranking.clear()
-  ranking.appendRow(['Rank', 'Character', 'Points', '#1 finishes', 'Top 3 finishes', 'Top 9 finishes', 'Average rank'])
-  ranking.getRange(1, 1, 1, 7).setFontWeight('bold')
-  if (table.length) ranking.getRange(2, 1, table.length, 7).setValues(table)
+  ranking.appendRow(columns)
+  ranking.getRange(1, 1, 1, columns.length).setFontWeight('bold')
+  if (table.length) ranking.getRange(2, 1, table.length, columns.length).setValues(table)
   ranking.setFrozenRows(1)
   ranking.getRange('A1').setNote(`Updated ${new Date().toLocaleString()} from ${rows.length} results`)
 }
