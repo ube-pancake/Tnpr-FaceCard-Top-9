@@ -14,6 +14,9 @@ export const schools = [
   { id: 'germany', name: 'Germany', nameJa: 'ドイツ', short: 'GER', color: '#1d1d1f', accent: '#e2b13c' },
   { id: 'france', name: 'France', nameJa: 'フランス', short: 'FRA', color: '#1f3c8f', accent: '#f2f2f2' },
   { id: 'usa', name: 'USA', nameJa: 'アメリカ', short: 'USA', color: '#b0243a', accent: '#ffffff' },
+  { id: 'greece', name: 'Greece', nameJa: 'ギリシャ', short: 'GRE', color: '#1f5fa8', accent: '#ffffff' },
+  { id: 'australia', name: 'Australia', nameJa: 'オーストラリア', short: 'AUS', color: '#12305f', accent: '#f2c230' },
+  { id: 'switzerland', name: 'Switzerland', nameJa: 'スイス', short: 'SUI', color: '#d52b1e', accent: '#ffffff' },
   { id: 'spain', name: 'Spain', nameJa: 'スペイン', short: 'ESP', color: '#c8102e', accent: '#f6c544' },
   { id: 'other', name: 'Other', nameJa: 'その他', short: 'OTH', color: '#715e52', accent: '#e7d6be' },
 ]
@@ -34,9 +37,13 @@ const roster = {
     'Ryuji Omagari', 'Ikuto Kimijima', 'Atsukyo Tono', 'Tsukimitsu Ochi', 'Jusaburo Mori', 'Sotomichi Nakagauchi',
     'Yudai Yamato', 'Shinobu Miyako', 'Chikahiko Matsudaira', 'Shun Suzuki', 'Issa Washio', 'Akuto Mitsuya',
   ],
+  // Players tennimu.com doesn't list were added from the anime site (tenipuri.jp/u17/worldcup).
   germany: ['Jurgen Borisovich Volk', 'Q.P.', 'Michael Bismarck', 'Elmar Siegfried', 'A. Frankensteiner', 'Dankmar Schneider', 'Belti B Volk'],
-  france: ['Tristan Bardot', 'Timothee Moreau', 'Auguir Delon', 'Prince Ludwig Chardard', 'Edgar Delacroix', 'Jonathan Saint Georges'],
-  usa: ['Ralph Reinhart', 'Dodo Obando', 'Kiko Balentien'],
+  france: ['L. Camus de Charpentier', 'Tristan Bardot', 'Timothee Moreau', 'Auguir Delon', 'Prince Ludwig Chardard', 'Edgar Delacroix', 'Jonathan Saint Georges'],
+  usa: ['Ralph Reinhart', 'Dodo Obando', 'Kiko Balentien', 'Alan Hopkins', 'Rocky Meredith', 'Maxwell'],
+  greece: ['Zeus Iliopoulos', 'Thalatta Herakles', 'Hermes Kunellis', 'Vulcan Laertius', 'Papadopoulos Evangelos', 'Apollon Stefanopoulos', 'Orion Stefanopoulos'],
+  australia: ['Jean Fitzgerald', 'Chris Hopman', 'Mac McGregor', 'J.J. Dolgius', 'Milky Milman', 'Noah J. Dolgius'],
+  switzerland: ['Alexander Amadeus', 'Peter Lambiere', 'Henry Nobel III'],
   spain: ['Antonio da Medanore', 'Julio Roman', 'Mars de Colon', 'Silva Serra Banbieri', 'Romeo Fernandez', 'Sedah'],
   other: ['Nanjiro Echizen', 'Sasabe', 'Reiji Kamishiro', 'Tsubasa Hanamura'],
 }
@@ -140,6 +147,7 @@ const japaneseNames = {
   'A. Frankensteiner': 'A・フランケンシュタイナー',
   'Dankmar Schneider': 'ダンクマール・シュナイダー',
   'Belti B Volk': 'ベルティ・B・ボルク',
+  'L. Camus de Charpentier': 'L・カミュ・ド・シャルパンティエ',
   'Tristan Bardot': 'トリスタン・バルドー',
   'Timothee Moreau': 'ティモテ・モロー',
   'Auguir Delon': 'オジュワール・ドロン',
@@ -149,6 +157,25 @@ const japaneseNames = {
   'Ralph Reinhart': 'ラルフ・ラインハート',
   'Dodo Obando': 'ドゥドゥ・オバンドゥー',
   'Kiko Balentien': 'キコ・バレンティン',
+  'Alan Hopkins': 'アラン・ホプキンス',
+  'Rocky Meredith': 'ロッキー・メレディス',
+  Maxwell: 'マックスウェル',
+  'Zeus Iliopoulos': 'ゼウス・イリオポウロス',
+  'Thalatta Herakles': 'タラッタ・ヘラクレス',
+  'Hermes Kunellis': 'ヘルメス・クネリス',
+  'Vulcan Laertius': 'バルカン・ラエルティオス',
+  'Papadopoulos Evangelos': 'パパドプーロス・エヴァゲロス',
+  'Apollon Stefanopoulos': 'アポロン・ステファノプロス',
+  'Orion Stefanopoulos': 'オリオン・ステファノプロス',
+  'Jean Fitzgerald': 'ジャン・フィッツジェラルド',
+  'Chris Hopman': 'クリス・ホップマン',
+  'Mac McGregor': 'マック・マグレガー',
+  'J.J. Dolgius': 'J・J・ドルギアス',
+  'Milky Milman': 'ミルキー・ミルマン',
+  'Noah J. Dolgius': 'ノア・J・ドルギアス',
+  'Alexander Amadeus': 'アレキサンダー・アマデウス',
+  'Peter Lambiere': 'ペーター・ランビエール',
+  'Henry Nobel III': 'アンリ・ノーベル3世',
   'Antonio da Medanore': 'アントニオ・ダ・メダノレ',
   'Julio Roman': 'フリオ・ロマン',
   'Mars de Colon': 'マルス・デ・コロン',
@@ -163,27 +190,21 @@ const japaneseNames = {
 
 const slugify = (value) => value.toLowerCase().replace(/[.']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
-// Teams shown on the site. The World Cup teams are in the roster but hidden until their photos are
-// ready; add 'germany', 'france', 'usa' and 'spain' here to show them.
-const ACTIVE_TEAMS = ['seigaku', 'fudomine', 'rudolph', 'yamabuki', 'hyoutei', 'rokkaku', 'rikkai', 'higa', 'shiten', 'u17']
+// Characters only appear once they have a photo in public/players/<team>/, and a team only appears
+// once at least one of its characters does (Spain is still waiting for photos).
+const photoFor = (schoolId, name) => photos[`${schoolId}/${slugify(name)}`]
 
-// Characters on a shown team who are left out until they have a photo. Remove a name once its photo is added.
-const AWAITING_PHOTO = [
-  'Sotomichi Nakagauchi', 'Yudai Yamato', 'Shinobu Miyako', 'Chikahiko Matsudaira', 'Shun Suzuki', 'Issa Washio',
-]
-
-export const activeSchools = schools.filter((school) => !ACTIVE_TEAMS || ACTIVE_TEAMS.includes(school.id))
-
-export const players = Object.entries(roster).filter(([schoolId]) => !ACTIVE_TEAMS || ACTIVE_TEAMS.includes(schoolId)).flatMap(([schoolId, names]) =>
-  names.filter((name) => !AWAITING_PHOTO.includes(name)).map((name, index) => ({
+export const players = Object.entries(roster).flatMap(([schoolId, names]) =>
+  names.filter((name) => photoFor(schoolId, name)).map((name, index) => ({
     id: `${schoolId}-${slugify(name)}`,
     name,
     nameJa: japaneseNames[name],
     schoolId,
     seed: index,
-    // null when there's no photo yet; the card then shows the team-colored initials.
-    image: photos[`${schoolId}/${slugify(name)}`] ? `${import.meta.env.BASE_URL}players/${schoolId}/${photos[`${schoolId}/${slugify(name)}`]}` : null,
+    image: `${import.meta.env.BASE_URL}players/${schoolId}/${photoFor(schoolId, name)}`,
   })),
 )
+
+export const activeSchools = schools.filter((school) => players.some((player) => player.schoolId === school.id))
 
 export const schoolMap = Object.fromEntries(schools.map((school) => [school.id, school]))

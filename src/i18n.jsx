@@ -54,6 +54,9 @@ const strings = {
     share: 'Save / Share',
     download: 'Download image',
     pressHoldShort: 'If nothing was saved, press and hold the image above.',
+    welcomeTitle: 'Before you start',
+    welcomeText: (wavebox) => <>We are collecting pictures for characters that are not from Rising Beat. Please feel free to submit via {wavebox}.</>,
+    welcomeContinue: 'Continue →',
   },
   ja: {
     brand: 'テニプリ 好き顔ランキング',
@@ -105,6 +108,9 @@ const strings = {
     share: '保存・共有',
     download: '画像をダウンロード',
     pressHoldShort: '保存されない場合は、上の画像を長押ししてください。',
+    welcomeTitle: 'はじめに',
+    welcomeText: (wavebox) => <>Rising Beat以外のキャラクターの写真を募集しています。{wavebox}からお気軽にお送りください。</>,
+    welcomeContinue: '次へ →',
   },
 }
 

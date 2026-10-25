@@ -6,3 +6,4 @@ dist/
 unused-photos/
 # Your own archive of replaced photos (kept on this computer, not published)
 public/players/*/old/
+worldcup-photos/

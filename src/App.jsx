@@ -541,6 +541,21 @@ function Empty({ teams, onUndo, onRestart }) {
   )
 }
 
+// First screen on every visit: asks for photos of the characters still missing one.
+function Welcome({ onContinue }) {
+  const { t } = useT()
+  return (
+    <main className="screen welcome">
+      <p className="eyebrow">{t.brand}</p>
+      <h1>{t.welcomeTitle}</h1>
+      <p className="sub">{t.welcomeText(<a href={WAVEBOX_URL} target="_blank" rel="noopener noreferrer">Wavebox</a>)}</p>
+      <div className="actions">
+        <button className="primary" onClick={onContinue} autoFocus>{t.welcomeContinue}</button>
+      </div>
+    </main>
+  )
+}
+
 function About({ onClose }) {
   const { t } = useT()
   useEffect(() => {
@@ -604,6 +619,7 @@ export default function App() {
   const [saved, setSaved] = useState(loadSaved)
   const [editingFraming, setEditingFraming] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
+  const [welcomed, setWelcomed] = useState(false)
   const [lang, setLang] = useState(() => (readPref(LANG_KEY) === 'ja' ? 'ja' : 'en'))
   // A theme chosen with the toggle wins; until then the page follows the device.
   const [chosenTheme, setChosenTheme] = useState(() => {
@@ -679,6 +695,8 @@ export default function App() {
   let screen
   if (editingFraming) {
     screen = <FrameEditor Portrait={Portrait} onClose={() => setEditingFraming(false)} />
+  } else if (!welcomed) {
+    screen = <Welcome onContinue={() => setWelcomed(true)} />
   } else if (!session) {
     screen = (
       <Intro

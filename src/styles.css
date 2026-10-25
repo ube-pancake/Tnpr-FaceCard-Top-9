@@ -180,3 +180,7 @@ html:not(.touch) .save-panel .save-image img:hover { box-shadow: 0 0 0 3px var(-
 .save-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }
 .save-actions .primary { width: auto; margin: 0; }
 .save-panel .notice { margin: 8px 0 0; }
+/* Welcome screen shown before the team picker */
+.screen.welcome, .prefs + .screen.welcome { padding-top: 10vh; padding-bottom: 6vh; }
+.welcome .sub { max-width: 34em; margin-left: auto; margin-right: auto; }
+
