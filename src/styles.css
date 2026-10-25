@@ -167,11 +167,14 @@ html:not(.touch) .pref:hover { border-color: var(--violet); color: var(--violet-
 .modal a { color: var(--violet-text); font-weight: 700; }
 .modal .secondary { margin-top: 12px; }
 /* Save preview: the finished image plus save buttons, on phones and computers */
-.save-preview { overflow-y: auto; }
+.save-preview { overflow: hidden; }
 .save-panel { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 520px; max-height: 100%; padding: 18px 16px 12px; border-radius: 16px; background: var(--surface); color: var(--ink); text-align: center; }
 .save-panel h2 { margin: 0 0 12px; }
-.save-image { width: 100%; min-height: 0; overflow-y: auto; border-radius: 10px; background: var(--soft); }
-.save-panel .save-image img { display: block; width: 100%; max-height: none; border-radius: 10px; }
+/* The whole image is scaled to fit the screen, so there are no scrollbars in either direction. */
+.save-image { display: flex; justify-content: center; width: 100%; min-height: 0; overflow: hidden; padding: 6px; }
+.save-panel .save-image img { display: block; width: auto; height: auto; max-width: 100%; max-height: calc(100vh - 230px); max-height: calc(100dvh - 230px); border-radius: 10px; box-shadow: 0 0 0 1px var(--line); transition: box-shadow .2s, transform .2s; }
+html:not(.touch) .save-panel .save-image img:hover { box-shadow: 0 0 0 3px var(--violet), 0 0 26px 4px rgba(240, 56, 155, .5); transform: scale(1.01); }
+@media (prefers-reduced-motion: reduce) { .save-panel .save-image img { transition: none; } html:not(.touch) .save-panel .save-image img:hover { transform: none; } }
 .save-panel .hint { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
 .save-panel .hint.tip { font-size: 12px; color: var(--muted); }
 .save-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }
