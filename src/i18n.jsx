@@ -48,6 +48,8 @@ const strings = {
     contact: 'Contact',
     aboutTitle: 'About',
     madeBy: 'made by',
+    imageCredit: 'sorter made by ube',
+    imageScan: 'Scan to make your own Top 9',
   },
   ja: {
     brand: 'テニプリ 好き顔ランキング',
@@ -93,6 +95,8 @@ const strings = {
     contact: 'Contact',
     aboutTitle: 'このサイトについて',
     madeBy: '制作',
+    imageCredit: 'sorter made by ube',
+    imageScan: 'QRコードからあなたのTOP9も作れます',
   },
 }
 

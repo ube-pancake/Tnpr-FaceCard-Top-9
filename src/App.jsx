@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import QRCode from 'qrcode'
 import { activeSchools, players, schoolMap } from './data.js'
 import { TOP_COUNT, choose, chooseNeither, currentPair, progress, startSort } from './sorter.js'
 import { frameFor, layoutFor, toStyle } from './framing.js'
@@ -12,6 +13,8 @@ const LANG_KEY = 'favorite-faces-lang'
 const THEME_KEY = 'favorite-faces-theme'
 const WAVEBOX_URL = 'https://wavebox.me/wave/6vf81qelg8m318zr/'
 const GITHUB_URL = 'https://github.com/ube-pancake'
+// Where the QR code on saved images points. Fixed, so images saved while testing locally point to the live site too.
+const SITE_URL = 'https://ube-pancake.github.io/Tnpr-FaceCard-Top-9/'
 const ALL_TEAMS = activeSchools.map((school) => school.id)
 
 // A sort covers a list of team ids, in picker order. Saves from before mixing teams have a single
@@ -254,6 +257,22 @@ const roundRect = (ctx, x, y, w, h, r) => {
   ctx.closePath()
 }
 
+// Draws a scannable QR code (with its white quiet zone) into a size×size square.
+const drawQrCode = (ctx, text, x, y, size) => {
+  const { modules } = QRCode.create(text, { errorCorrectionLevel: 'M' })
+  const quiet = 2
+  const cell = size / (modules.size + quiet * 2)
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(x, y, size, size)
+  ctx.fillStyle = '#16161d'
+  for (let row = 0; row < modules.size; row += 1) {
+    for (let col = 0; col < modules.size; col += 1) {
+      // Overlap by a hair so cells don't show seams when the image is scaled.
+      if (modules.get(row, col)) ctx.fillRect(x + (col + quiet) * cell, y + (row + quiet) * cell, cell + 0.5, cell + 0.5)
+    }
+  }
+}
+
 // Shrinks the font until the text fits, so long names don't spill into the next cell.
 const fitText = (ctx, text, x, y, maxWidth, weight, size) => {
   let fontSize = size
@@ -283,7 +302,8 @@ function Result({ ranked, teams, onRestart }) {
     const top = 190
     const canvas = document.createElement('canvas')
     canvas.width = pad * 2 + size * 3 + gap * 2
-    canvas.height = top + (size + label + gap) * rows + 40
+    const credits = 210
+    canvas.height = top + (size + label + gap) * rows + credits
     const ctx = canvas.getContext('2d')
     const gradient = (x, y, w, h) => {
       const fill = ctx.createLinearGradient(x, y, x + w, y + h)
@@ -355,6 +375,24 @@ function Result({ ranked, teams, onRestart }) {
       ctx.fillStyle = '#8a8a96'
       fitText(ctx, teamName(player.schoolId), x + size / 2, y + size + 70, size, 500, 20)
     })
+
+    // Credits strip: "sorter made by ube" and a QR code back to the sorter, so shared images bring people here.
+    const stripTop = top + (size + label + gap) * rows + 10
+    const qrSize = 160
+    const qrX = canvas.width - pad - qrSize
+    const qrY = stripTop + 20
+    ctx.fillStyle = '#ececf1'
+    ctx.fillRect(pad, stripTop, canvas.width - pad * 2, 2)
+    drawQrCode(ctx, SITE_URL, qrX, qrY, qrSize)
+    ctx.textAlign = 'left'
+    const textWidth = qrX - pad - 24
+    ctx.fillStyle = '#16161d'
+    fitText(ctx, t.imageCredit, pad, qrY + 52, textWidth, 800, 34)
+    ctx.fillStyle = '#8a8a96'
+    fitText(ctx, t.imageScan, pad, qrY + 98, textWidth, 500, 24)
+    ctx.fillStyle = '#5a4ee0'
+    fitText(ctx, SITE_URL.replace(/^https?:\/\//, '').replace(/\/$/, ''), pad, qrY + 138, textWidth, 700, 22)
+    ctx.textAlign = 'center'
 
     return canvas
   }
