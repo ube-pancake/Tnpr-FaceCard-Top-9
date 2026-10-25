@@ -169,7 +169,7 @@ const ACTIVE_TEAMS = ['seigaku', 'fudomine', 'rudolph', 'yamabuki', 'hyoutei', '
 
 // Characters on a shown team who are left out until they have a photo. Remove a name once its photo is added.
 const AWAITING_PHOTO = [
-  'Duke Watanabe', 'Sotomichi Nakagauchi', 'Yudai Yamato', 'Shinobu Miyako', 'Chikahiko Matsudaira', 'Shun Suzuki', 'Issa Washio',
+  'Sotomichi Nakagauchi', 'Yudai Yamato', 'Shinobu Miyako', 'Chikahiko Matsudaira', 'Shun Suzuki', 'Issa Washio',
 ]
 
 export const activeSchools = schools.filter((school) => !ACTIVE_TEAMS || ACTIVE_TEAMS.includes(school.id))
