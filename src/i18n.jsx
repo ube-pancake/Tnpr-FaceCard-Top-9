@@ -50,6 +50,10 @@ const strings = {
     madeBy: 'made by',
     imageCredit: 'sorter made by ube',
     imageScan: 'Scan to make your own Top 9',
+    previewTitle: 'Preview',
+    share: 'Save / Share',
+    download: 'Download image',
+    pressHoldShort: 'If nothing was saved, press and hold the image above.',
   },
   ja: {
     brand: 'テニプリ 好き顔ランキング',
@@ -97,6 +101,10 @@ const strings = {
     madeBy: '制作',
     imageCredit: 'sorter made by ube',
     imageScan: 'QRコードからあなたのTOP9も作れます',
+    previewTitle: 'プレビュー',
+    share: '保存・共有',
+    download: '画像をダウンロード',
+    pressHoldShort: '保存されない場合は、上の画像を長押ししてください。',
   },
 }
 

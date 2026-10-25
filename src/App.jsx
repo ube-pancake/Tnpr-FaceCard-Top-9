@@ -429,34 +429,39 @@ function Result({ ranked, teams, onRestart }) {
     }
   }, [lang])
 
-  const saveImage = async () => {
+  // "Save image" always opens a preview first; saving happens from buttons inside it.
+  const openPreview = () => {
     if (!image) return
-    if (isInAppBrowser()) {
-      setPreview(true)
-      return
+    setNotice('')
+    setPreview(true)
+  }
+  const closePreview = () => setPreview(false)
+  useEffect(() => {
+    if (!preview) return undefined
+    const onKey = (event) => { if (event.key === 'Escape') closePreview() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [preview])
+
+  // In-app browsers (Messenger, Instagram…) drop downloads and fake sharing, so there the
+  // preview only offers press-and-hold. Phones with a share sheet get "Save / Share".
+  const inApp = isInAppBrowser()
+  const canShare = !inApp && isTouchDevice() && Boolean(image && navigator.canShare?.({ files: [image.file] }))
+  const shareImage = async () => {
+    try {
+      await navigator.share({ files: [image.file], title: t.imageTitle(ranked.length) })
+    } catch (error) {
+      if (error.name !== 'AbortError') setNotice(t.pressHoldShort)
     }
-    const shareable = isTouchDevice() && navigator.canShare?.({ files: [image.file] })
-    if (shareable) {
-      try {
-        await navigator.share({ files: [image.file], title: t.imageTitle(ranked.length) })
-        setNotice('')
-        return
-      } catch (error) {
-        if (error.name === 'AbortError') return
-      }
-    }
-    if (isTouchDevice()) {
-      // Phones without a share sheet often ignore downloads: show the image to long-press.
-      setPreview(true)
-      return
-    }
+  }
+  const downloadImage = () => {
     const link = document.createElement('a')
     link.download = fileName
     link.href = image.url
     document.body.appendChild(link)
     link.click()
     link.remove()
-    setNotice(t.downloadStarted)
+    setNotice(isTouchDevice() ? t.pressHoldShort : t.downloadStarted)
   }
 
   return (
@@ -478,7 +483,7 @@ function Result({ ranked, teams, onRestart }) {
         ))}
       </div>
       <div className="actions">
-        <button className="primary" onClick={saveImage} disabled={!image}>{image ? t.save : t.preparing}</button>
+        <button className="primary" onClick={openPreview} disabled={!image}>{image ? t.save : t.preparing}</button>
         <button className="secondary" onClick={onRestart}>{t.startOver}</button>
       </div>
       <p className="notice" role="status">{notice}</p>
@@ -500,11 +505,21 @@ function Result({ ranked, teams, onRestart }) {
         </ol>
       </section>
       {preview && image && (
-        <div className="save-preview" role="dialog" aria-label={t.saveDialog} onClick={() => setPreview(false)}>
-          <p>{t.pressHold}</p>
-          {isInAppBrowser() && <p className="tip">{t.inAppTip}</p>}
-          <img src={image.dataUrl} alt={t.imageTitle(ranked.length)} onClick={(event) => event.stopPropagation()} />
-          <button className="secondary" onClick={() => setPreview(false)}>{t.close}</button>
+        <div className="save-preview" role="dialog" aria-modal="true" aria-label={t.saveDialog} onClick={closePreview}>
+          <div className="save-panel" onClick={(event) => event.stopPropagation()}>
+            <h2>{t.previewTitle}</h2>
+            <div className="save-image">
+              <img src={image.dataUrl} alt={t.imageTitle(ranked.length)} />
+            </div>
+            {isTouchDevice() && <p className="hint">{t.pressHold}</p>}
+            {inApp && <p className="hint tip">{t.inAppTip}</p>}
+            <div className="save-actions">
+              {canShare && <button className="primary" onClick={shareImage}>{t.share}</button>}
+              {!canShare && !inApp && <button className="primary" onClick={downloadImage}>{t.download}</button>}
+              <button className="secondary" onClick={closePreview}>{t.close}</button>
+            </div>
+            <p className="notice" role="status">{notice}</p>
+          </div>
         </div>
       )}
     </main>
