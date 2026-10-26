@@ -183,5 +183,7 @@ html:not(.touch) .save-panel .save-image img:hover { box-shadow: 0 0 0 3px var(-
 /* Welcome screen shown before the team picker */
 .screen.welcome, .prefs + .screen.welcome { padding-top: 10vh; padding-bottom: 6vh; }
 .nowrap { white-space: nowrap; }
+.primary.start-top { margin: 0 0 16px; }
+.filled-note { max-width: 32em; margin: 4px auto 14px; padding: 8px 12px; border-radius: 10px; font-size: 13px; color: var(--ink); background: var(--soft); }
 .welcome .sub { max-width: 34em; margin-left: auto; margin-right: auto; }
 

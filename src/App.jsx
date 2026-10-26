@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { activeSchools, players, schoolMap } from './data.js'
-import { TOP_COUNT, choose, chooseNeither, currentPair, progress, startSort } from './sorter.js'
+import { TOP_COUNT, choose, chooseNeither, currentPair, fillRanking, progress, startSort } from './sorter.js'
 import { frameFor, layoutFor, toStyle } from './framing.js'
 import FrameEditor from './FrameEditor.jsx'
 import { sendResult } from './results.js'
@@ -149,12 +149,12 @@ function Intro({ onStart, resumeTeams, onResume, onEditFraming }) {
         <p className="eyebrow">{t.brand}{teams.length > 0 && !all && ` · ${teamsLabel(teams)}`}</p>
         <h1><Accented parts={t.title(topCount || TOP_COUNT)} /></h1>
         <p className="sub">{t.sub}</p>
+        <button className="primary start-top" onClick={() => onStart(teams)} disabled={!pool.length}>{t.start}</button>
         <div className="grid3 preview">
           {preview.map((player) => <Portrait key={player.id} player={player} />)}
           {!preview.length && <p className="pick-hint">{t.pickTeam}</p>}
         </div>
         <p className="count">{pool.length ? t.count(topCount, pool.length, !all && teamsLabel(teams)) : t.pickTeam}</p>
-        <button className="primary" onClick={() => onStart(teams)} disabled={!pool.length}>{t.start}</button>
         {onResume && <button className="link" onClick={onResume}>{t.resume(teamsLabel(resumeTeams))}</button>}
         {import.meta.env.DEV && <button className="link" onClick={onEditFraming}>Adjust photo framing (local only)</button>}
       </section>
@@ -284,7 +284,8 @@ const fitText = (ctx, text, x, y, maxWidth, weight, size) => {
   ctx.fillText(text, x, y)
 }
 
-function Result({ ranked, teams, onRestart }) {
+// `picked` is how many of `ranked` came from real picks; the rest were brought back to fill the list.
+function Result({ ranked, picked, teams, onRestart }) {
   const { lang, t, nameOf, altNameOf, teamName, teamsLabel } = useT()
   const [notice, setNotice] = useState('')
   // Smaller teams can't fill the 3×3 layout, so they're shown in plain rank order.
@@ -468,6 +469,7 @@ function Result({ ranked, teams, onRestart }) {
     <main className="screen">
       <p className="eyebrow">{t.yourResult}{!isAllTeams(teams) && ` · ${teamsLabel(teams)}`}</p>
       <h1><Accented parts={t.resultTitle(ranked.length)} /></h1>
+      {picked < ranked.length && <p className="filled-note">{t.filledNote(picked, ranked.length)}</p>}
       <div className="grid3 result">
         {cells.map(({ rank, player }) => (
           <figure key={player.id} className={rank === 0 ? 'first' : ''}>
@@ -709,7 +711,7 @@ export default function App() {
   } else if (state.done && !state.ranked.length) {
     screen = <Empty teams={session.teams} onUndo={() => updateHistory((current) => current.slice(0, -1))} onRestart={restart} />
   } else if (state.done) {
-    screen = <Result ranked={state.ranked.slice(0, TOP_COUNT)} teams={session.teams} onRestart={restart} />
+    screen = <Result ranked={fillRanking(state, ids)} picked={Math.min(state.ranked.length, TOP_COUNT)} teams={session.teams} onRestart={restart} />
   } else {
     screen = (
       <Matchup

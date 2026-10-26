@@ -75,6 +75,22 @@ export const chooseNeither = (state, ids) => {
   return settle({ ...state, lostTo, skipped: [...(state.skipped || []), a, b], index: state.index + 2, picks: state.picks + 1 }, ids)
 }
 
+// The finished list, topped up to TOP_COUNT (or everyone, for small teams) when "Neither" left it
+// short. Characters brought back are ordered by how many matchups they won, then by skip order.
+export const fillRanking = (state, ids) => {
+  const target = Math.min(TOP_COUNT, ids.length)
+  const ranked = state.ranked.slice(0, target)
+  if (ranked.length >= target) return ranked
+  const wins = Object.fromEntries(ids.map((id) => [id, 0]))
+  Object.values(state.lostTo).forEach((winners) => winners.forEach((winner) => { if (winner in wins) wins[winner] += 1 }))
+  const rankedSet = new Set(ranked)
+  const skipOrder = state.skipped || []
+  const rest = ids.filter((id) => !rankedSet.has(id))
+  const order = (id) => (skipOrder.includes(id) ? skipOrder.indexOf(id) : -1)
+  rest.sort((a, b) => wins[b] - wins[a] || order(a) - order(b))
+  return [...ranked, ...rest.slice(0, target - ranked.length)]
+}
+
 // Picks left to crown the current leader, plus roughly log2(unranked) - 1 picks for each later rank.
 const remainingPicks = (state, count) => {
   const alive = state.round.length - state.index + state.next.length
