@@ -191,10 +191,13 @@ const japaneseNames = {
 const slugify = (value) => value.toLowerCase().replace(/[.']/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 
 // Characters only appear once they have a photo in public/players/<team>/, and a team only appears
-// once at least one of its characters does (Spain is still waiting for photos).
+// once at least one of its characters does.
 const photoFor = (schoolId, name) => photos[`${schoolId}/${slugify(name)}`]
 
-export const players = Object.entries(roster).flatMap(([schoolId, names]) =>
+// Teams kept off the site even though some photos are in; remove a team here to show it.
+const HIDDEN_TEAMS = ['spain']
+
+export const players = Object.entries(roster).filter(([schoolId]) => !HIDDEN_TEAMS.includes(schoolId)).flatMap(([schoolId, names]) =>
   names.filter((name) => photoFor(schoolId, name)).map((name, index) => ({
     id: `${schoolId}-${slugify(name)}`,
     name,

@@ -1,4 +1,9 @@
 {
+  "greece-vulcan-laertius": {
+    "x": 0.493,
+    "y": 0.377,
+    "zoom": 1
+  },
   "hyoutei-gakuto-mukahi": {
     "x": 0.65,
     "y": 0.379,
@@ -8,5 +13,10 @@
     "x": 0.3,
     "y": 0.3,
     "zoom": 1.1
+  },
+  "usa-alan-hopkins": {
+    "x": 0.531,
+    "y": 0.314,
+    "zoom": 1
   }
 }
