@@ -1,17 +1,132 @@
 {
+  "australia-bill-hewitt": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "australia-jean-fitzgerald": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "australia-noah-j-dolgius": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "england-charlie-palmer": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "england-eric-paddington": {
+    "x": 0.793,
+    "y": 0.553,
+    "zoom": 1
+  },
+  "fudomine-kyosuke-uchimura": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "fudomine-masaya-sakurai": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "fudomine-tatsunori-mori": {
+    "x": 0.892,
+    "y": 0.602,
+    "zoom": 1
+  },
+  "greece-apollon-stefanopoulos": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "greece-orion-stefanopoulos": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "greece-vulcan-laertius": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "greece-zeus-iliopoulos": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "higa-tomoya-shiranui": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
   "hyoutei-gakuto-mukahi": {
     "x": 0.65,
     "y": 0.379,
     "zoom": 1.1
+  },
+  "hyoutei-haginosuke-taki": {
+    "x": 0.705,
+    "y": 0.968,
+    "zoom": 1
+  },
+  "rudolph-atsushi-kisarazu": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "rudolph-shinya-yanagisawa": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
   },
   "shiten-kuranosuke-shiraishi": {
     "x": 0.3,
     "y": 0.3,
     "zoom": 1.1
   },
+  "switzerland-albert-federer": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "switzerland-henry-nobel-iii": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "switzerland-randy-pug": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
   "usa-alan-hopkins": {
     "x": 0.531,
     "y": 0.314,
+    "zoom": 1
+  },
+  "usa-oliver-phillips": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "usa-rocky-meredith": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "yamabuki-inakichi-nitobe": {
+    "x": 0.5,
+    "y": 0.55,
+    "zoom": 1
+  },
+  "yamabuki-toji-muromachi": {
+    "x": 0.5,
+    "y": 0.55,
     "zoom": 1
   }
 }
