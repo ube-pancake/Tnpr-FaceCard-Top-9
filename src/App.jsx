@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { activeSchools, players, schoolMap } from './data.js'
 import { TOP_COUNT, choose, chooseNeither, currentPair, fillRanking, progress, startSort } from './sorter.js'
@@ -472,6 +472,23 @@ function Result({ ranked, picked, teams, onRestart }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [preview])
 
+  // The hint and buttons take a different height on every screen (touch screens add the
+  // press-and-hold hint), so measure them and give the image exactly the height that is left.
+  const panelRef = useRef(null)
+  useLayoutEffect(() => {
+    const panel = panelRef.current
+    if (!panel) return undefined
+    const fit = () => {
+      const overlay = getComputedStyle(panel.parentElement)
+      const room = panel.parentElement.clientHeight - parseFloat(overlay.paddingTop) - parseFloat(overlay.paddingBottom)
+      const others = panel.scrollHeight - panel.querySelector('.save-image img').offsetHeight
+      panel.style.setProperty('--image-room', `${Math.floor(room - others)}px`)
+    }
+    fit()
+    window.addEventListener('resize', fit)
+    return () => window.removeEventListener('resize', fit)
+  }, [preview, notice, lang])
+
   // In-app browsers (Messenger, Instagram…) drop downloads and fake sharing, so there the
   // preview only offers press-and-hold. Phones with a share sheet get "Save / Share".
   const inApp = isInAppBrowser()
@@ -536,7 +553,7 @@ function Result({ ranked, picked, teams, onRestart }) {
       </section>
       {preview && image && (
         <div className="save-preview" role="dialog" aria-modal="true" aria-label={t.saveDialog} onClick={closePreview}>
-          <div className="save-panel" onClick={(event) => event.stopPropagation()}>
+          <div className="save-panel" ref={panelRef} onClick={(event) => event.stopPropagation()}>
             <h2>{t.previewTitle}</h2>
             <div className="save-image">
               <img src={image.dataUrl} alt={t.imageTitle(ranked.length)} />
