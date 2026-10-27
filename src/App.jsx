@@ -162,6 +162,8 @@ function Intro({ onStart, resumeTeams, onResume, onEditFraming }) {
   )
 }
 
+const TAP_GUARD_MS = 400
+
 function Matchup({ state, history, count, teams, onPick, onNeither, onBack, onHome }) {
   const { t, nameOf, altNameOf, teamName, teamsLabel } = useT()
   const pair = currentPair(state)
@@ -173,6 +175,17 @@ function Matchup({ state, history, count, teams, onPick, onNeither, onBack, onHo
   useEffect(() => {
     best.current = [...best.current.slice(0, history.length - 1), percent]
   }, [history.length, percent])
+
+  // The next pair appears where the last tap landed, so a double tap (or one registered twice by a
+  // slow phone) would pick a face nobody saw. Ignore taps until the new pair has been on screen briefly.
+  const shownAt = useRef(0)
+  useEffect(() => {
+    shownAt.current = performance.now()
+  }, [pair.join()])
+  const tap = (action) => () => {
+    if (performance.now() - shownAt.current < TAP_GUARD_MS) return
+    action()
+  }
 
   useEffect(() => {
     const onKey = (event) => {
@@ -199,7 +212,7 @@ function Matchup({ state, history, count, teams, onPick, onNeither, onBack, onHo
         {pair.map((id, side) => {
           const player = playerMap[id]
           return (
-            <button key={id} className="card" onClick={() => onPick(side)}>
+            <button key={id} className="card" onClick={tap(() => onPick(side))}>
               <Portrait player={player} />
               <span className="name">{nameOf(player)}</span>
               <span className="meta">{altNameOf(player)}</span>
@@ -210,7 +223,7 @@ function Matchup({ state, history, count, teams, onPick, onNeither, onBack, onHo
       </div>
       <div className="choices">
         <button className="choice back" onClick={onBack} disabled={history.length < 2}>{t.back}</button>
-        <button className="choice neither" onClick={onNeither}>
+        <button className="choice neither" onClick={tap(onNeither)}>
           <span className="choice-hint">{t.neitherHint}</span> {t.neither}
         </button>
       </div>
