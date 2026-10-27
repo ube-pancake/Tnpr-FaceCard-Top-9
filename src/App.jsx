@@ -66,24 +66,36 @@ const loadSaved = () => {
 
 const sourcesFor = (player) => (player.image ? [player.image] : [])
 
+// Size of every photo that has finished loading once. A card needs the size to place the photo, so
+// knowing it up front lets an already-downloaded photo show on the card's very first frame.
+const photoSizes = {}
+const rememberSize = (src, img) => {
+  photoSizes[src] = { w: img.naturalWidth, h: img.naturalHeight }
+  return photoSizes[src]
+}
+
 // aspect is the box's width / height: 4:5 cards by default, 1 for the square result grid.
 function Portrait({ player, aspect = 0.8, frame, className = '' }) {
-  const [index, setIndex] = useState(0)
-  const [size, setSize] = useState(null)
   const sources = sourcesFor(player)
+  const [index, setIndex] = useState(0)
+  const [size, setSize] = useState(() => photoSizes[sources[0]] || null)
   const school = schoolMap[player.schoolId]
   const framing = frame || frameFor(player.id)
   const layout = size ? toStyle(layoutFor(framing, size.w, size.h, aspect)) : null
+  // Initials on the team color only when there is no photo to show. A photo that is still loading
+  // gets a plain tile, so slow phones don't flash colored letters before every pair.
+  const failed = index >= sources.length
 
   return (
     <div
-      className={`portrait ${className}`}
+      className={`portrait${failed ? ' no-photo' : ''} ${className}`}
       style={{ '--team': school.color, '--accent': school.accent, '--pad': `${100 / aspect}%`, aspectRatio: aspect }}
       role="img"
       aria-label={player.name}
     >
-      <span className="monogram">{initialsOf(player)}</span>
-      {index < sources.length && (
+      {failed ? (
+        <span className="monogram">{initialsOf(player)}</span>
+      ) : (
         <>
           {framing.fit && layout && <img className="backdrop" src={sources[index]} alt="" />}
           <img
@@ -92,7 +104,7 @@ function Portrait({ player, aspect = 0.8, frame, className = '' }) {
             alt=""
             className={layout ? 'loaded' : ''}
             style={layout || undefined}
-            onLoad={(event) => setSize({ w: event.target.naturalWidth, h: event.target.naturalHeight })}
+            onLoad={(event) => setSize(rememberSize(sources[index], event.target))}
             onError={() => setIndex((current) => current + 1)}
           />
         </>
@@ -245,7 +257,10 @@ const loadPortrait = (player) => new Promise((resolve) => {
   const tryLoad = (n) => {
     if (n >= sources.length) return resolve(null)
     const img = new Image()
-    img.onload = () => resolve(img)
+    img.onload = () => {
+      rememberSize(sources[n], img)
+      resolve(img)
+    }
     img.onerror = () => tryLoad(n + 1)
     img.src = sources[n]
   }

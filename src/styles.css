@@ -45,7 +45,8 @@ html:not(.touch) .team:hover { background: var(--soft); }
   .clear { flex: none; margin: 0; border-radius: 99px; white-space: nowrap; }
 }
 
-.portrait { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 10px; background: var(--team, #ddd); }
+.portrait { position: relative; aspect-ratio: 4 / 5; overflow: hidden; border-radius: 10px; background: var(--soft); }
+.portrait.no-photo { background: var(--team, #ddd); }
 .portrait .monogram { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: grid; place-items: center; color: var(--accent, #fff); font-weight: 800; font-size: 44px; letter-spacing: .02em; }
 .no-aspect .portrait { height: 0; padding-top: var(--pad, 125%); }
 .portrait img { position: absolute; max-width: none; opacity: 0; }
