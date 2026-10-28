@@ -19,14 +19,14 @@
     "y": 0.55,
     "zoom": 1
   },
-  "england-leon-wakefield": {
-    "x": 0.5,
-    "y": 0.6,
-    "zoom": 1
-  },
   "england-eric-paddington": {
     "x": 0.793,
     "y": 0.553,
+    "zoom": 1
+  },
+  "england-leon-wakefield": {
+    "x": 0.5,
+    "y": 0.6,
     "zoom": 1
   },
   "fudomine-kyosuke-uchimura": {
@@ -135,9 +135,9 @@
     "zoom": 3
   },
   "spain-silva-serra-banbieri": {
-    "x": 0.427,
-    "y": 0.105,
-    "zoom": 1.6
+    "x": 0.534,
+    "y": 0.429,
+    "zoom": 1
   },
   "switzerland-albert-federer": {
     "x": 0.5,
