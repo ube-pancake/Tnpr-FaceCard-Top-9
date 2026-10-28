@@ -46,7 +46,7 @@ const roster = {
   greece: ['Zeus Iliopoulos', 'Thalatta Herakles', 'Hermes Kunellis', 'Vulcan Laertius', 'Papadopoulos Evangelos', 'Apollon Stefanopoulos', 'Orion Stefanopoulos'],
   australia: ['Jean Fitzgerald', 'Chris Hopman', 'Mac McGregor', 'J.J. Dolgius', 'Milky Milman', 'Noah J. Dolgius', 'Bill Hewitt'],
   switzerland: ['Alexander Amadeus', 'Peter Lambiere', 'Henry Nobel III', 'Albert Federer', 'Randy Pug'],
-  england: ['Eric Paddington', 'Charlie Palmer'],
+  england: ['Eric Paddington', 'Charlie Palmer', 'Leon Wakefield'],
   spain: [
     'Antonio da Medanore', 'Antokino da Medanore', 'Julio Roman', 'Mars de Colon', 'Silva Serra Banbieri', 'Romeo Fernandez', 'Sedah',
     'Rodrigo Roca Rodrigo',
@@ -191,6 +191,7 @@ const japaneseNames = {
   'Oliver Phillips': 'オリバー・フィリップス',
   'Eric Paddington': 'エリック・パディントン',
   'Charlie Palmer': 'チャーリー・パーマー',
+  'Leon Wakefield': 'レオン・ウェイクフィールド',
   'Antonio da Medanore': 'アントニオ・ダ・メダノレ',
   'Julio Roman': 'フリオ・ロマン',
   'Mars de Colon': 'マルス・デ・コロン',

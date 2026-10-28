@@ -53,7 +53,7 @@ const strings = {
         date: '2026-10-28',
         items: [
           'New team: Spain (Julio Roman coming soon)',
-          'New character: Futa Kaji (U-17)',
+          'New characters: Futa Kaji (U-17), Leon Wakefield (England)',
           'New photos for Atsushi Kisarazu, Shinya Yanagisawa and Kojiro Saeki',
         ],
       },
@@ -122,7 +122,7 @@ const strings = {
         date: '2026-10-28',
         items: [
           '新チーム：スペイン代表（フリオ・ロマンは近日追加）',
-          '新キャラクター：加治 風多（U-17）',
+          '新キャラクター：加治 風多（U-17）、レオン・ウェイクフィールド（イギリス）',
           '木更津 淳・柳沢慎也・佐伯虎次郎の写真を更新',
         ],
       },
