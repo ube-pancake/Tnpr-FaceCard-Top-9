@@ -33,6 +33,13 @@ function doPost(e) {
   }
 }
 
+// Read by the site to show how many rankings have been made so far. Only the count leaves the sheet.
+function doGet() {
+  const results = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(RESULTS_SHEET)
+  const count = results ? Math.max(0, results.getLastRow() - 1) : 0
+  return ContentService.createTextOutput(JSON.stringify({ count })).setMimeType(ContentService.MimeType.JSON)
+}
+
 // Points: #1 gets 9, #2 gets 8 … #9 gets 1. Ties broken by number of #1 finishes.
 // "Neither picks" counts how often a character was skipped with the Neither button.
 function rebuildRanking() {

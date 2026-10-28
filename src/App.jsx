@@ -4,7 +4,7 @@ import { activeSchools, players, schoolMap } from './data.js'
 import { TOP_COUNT, choose, chooseNeither, currentPair, fillRanking, progress, startSort } from './sorter.js'
 import { frameFor, layoutFor, toStyle } from './framing.js'
 import FrameEditor from './FrameEditor.jsx'
-import { sendResult } from './results.js'
+import { fetchPlayCount, sendResult } from './results.js'
 import { Accented, LangContext, useT } from './i18n.jsx'
 
 const playerMap = Object.fromEntries(players.map((player) => [player.id, player]))
@@ -133,6 +133,12 @@ function Intro({ onStart, resumeTeams, onResume, onEditFraming }) {
   const topCount = Math.min(TOP_COUNT, pool.length)
   const all = isAllTeams(teams)
   const toggle = (id) => setTeams((current) => normalizeTeams(current.includes(id) ? current.filter((team) => team !== id) : [...current, id]))
+  const [playCount, setPlayCount] = useState(null)
+  useEffect(() => {
+    let cancelled = false
+    fetchPlayCount().then((count) => { if (!cancelled) setPlayCount(count) })
+    return () => { cancelled = true }
+  }, [])
   // Shown until it's dismissed once on this device.
   const [showTip, setShowTip] = useState(() => readPref(TEAM_TIP_KEY) !== 'seen')
   const closeTip = () => {
@@ -180,6 +186,7 @@ function Intro({ onStart, resumeTeams, onResume, onEditFraming }) {
           {!preview.length && <p className="pick-hint">{t.pickTeam}</p>}
         </div>
         <p className="count">{pool.length ? t.count(topCount, pool.length, !all && teamsLabel(teams)) : t.pickTeam}</p>
+        {playCount && <p className="play-count">{t.playCount(playCount)}</p>}
         {onResume && <button className="link" onClick={onResume}>{t.resume(teamsLabel(resumeTeams))}</button>}
         {import.meta.env.DEV && <button className="link" onClick={onEditFraming}>Adjust photo framing (local only)</button>}
       </section>

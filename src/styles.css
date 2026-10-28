@@ -40,6 +40,8 @@ html:not(.touch) .team:hover { background: var(--soft); }
 /* One-time tip pointing at the team list: to its left on wide screens, over the photos beside it on
    narrower ones, and above the team chips on phones. */
 .intro { position: relative; }
+.play-count { margin: -8px 0 16px; color: var(--muted); font-size: 13px; }
+.play-count b { color: var(--violet-text); }
 .team-tip { position: absolute; z-index: 5; top: 120px; right: calc(100% + 16px); width: 210px; padding: 12px 14px; border-radius: 12px; background: var(--ink); color: var(--surface); font-size: 13px; line-height: 1.5; text-align: left; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
 .team-tip::after { content: ""; position: absolute; top: 18px; right: -6px; width: 12px; height: 12px; background: inherit; transform: rotate(45deg); }
 .team-tip p { margin: 0 0 8px; }

@@ -9,3 +9,13 @@ export const sendResult = ({ team, ranking, skipped = [] }) => {
   // text/plain + no-cors avoids a CORS preflight, which Apps Script doesn't answer.
   fetch(RESULTS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body }).catch(() => {})
 }
+
+// How many rankings the sheet holds, from the script's doGet. Null when it can't be read, for example
+// before a script version with doGet is deployed, so the page just leaves the count out.
+export const fetchPlayCount = () => {
+  if (!RESULTS_URL) return Promise.resolve(null)
+  return fetch(RESULTS_URL)
+    .then((response) => response.json())
+    .then((data) => (Number.isFinite(data.count) && data.count > 0 ? data.count : null))
+    .catch(() => null)
+}
