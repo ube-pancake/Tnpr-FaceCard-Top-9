@@ -133,12 +133,6 @@ function Intro({ onStart, resumeTeams, onResume, onEditFraming }) {
   const topCount = Math.min(TOP_COUNT, pool.length)
   const all = isAllTeams(teams)
   const toggle = (id) => setTeams((current) => normalizeTeams(current.includes(id) ? current.filter((team) => team !== id) : [...current, id]))
-  const [playCount, setPlayCount] = useState(null)
-  useEffect(() => {
-    let cancelled = false
-    fetchPlayCount().then((count) => { if (!cancelled) setPlayCount(count) })
-    return () => { cancelled = true }
-  }, [])
   // Shown until it's dismissed once on this device.
   const [showTip, setShowTip] = useState(() => readPref(TEAM_TIP_KEY) !== 'seen')
   const closeTip = () => {
@@ -185,9 +179,7 @@ function Intro({ onStart, resumeTeams, onResume, onEditFraming }) {
           {preview.map((player) => <Portrait key={player.id} player={player} />)}
           {!preview.length && <p className="pick-hint">{t.pickTeam}</p>}
         </div>
-        <p className="count">{pool.length ? t.count(topCount, pool.length, !all && teamsLabel(teams)) : t.pickTeam}</p>
-        {playCount && <p className="play-count">{t.playCount(playCount)}</p>}
-        {onResume && <button className="link" onClick={onResume}>{t.resume(teamsLabel(resumeTeams))}</button>}
+        <p className="count">{pool.length ? t.count(topCount, pool.length, !all && teamsLabel(teams)) : t.pickTeam}</p>        {onResume && <button className="link" onClick={onResume}>{t.resume(teamsLabel(resumeTeams))}</button>}
         {import.meta.env.DEV && <button className="link" onClick={onEditFraming}>Adjust photo framing (local only)</button>}
       </section>
     </main>
@@ -685,8 +677,15 @@ function Preferences({ theme, onToggleTheme, onToggleLang, onAbout, onUpdates })
 
 function Footer() {
   const { t } = useT()
+  const [playCount, setPlayCount] = useState(null)
+  useEffect(() => {
+    let cancelled = false
+    fetchPlayCount().then((count) => { if (!cancelled) setPlayCount(count) })
+    return () => { cancelled = true }
+  }, [])
   return (
     <footer className="footer">
+      {playCount && <p className="play-count">{t.playCount(playCount)}</p>}
       <p>{t.footer}</p>
       <p>🎾 <a href={WAVEBOX_URL} target="_blank" rel="noopener noreferrer">wavebox</a> 🎾</p>
     </footer>
