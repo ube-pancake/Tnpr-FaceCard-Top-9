@@ -54,7 +54,8 @@ const strings = {
         items: [
           'New team: Spain (Julio Roman coming soon)',
           'New characters: Futa Kaji (U-17), Leon Wakefield (England)',
-          'New photos for Atsushi Kisarazu, Shinya Yanagisawa and Kojiro Saeki',
+          'New photos for Atsushi Kisarazu, Shinya Yanagisawa, Kojiro Saeki, Silva Serra Banbieri, Prince Ludwig Chardard, Kiko Balentien and Kouichi Aragaki',
+          'The total number of plays now shows at the bottom of the page',
         ],
       },
     ],
@@ -124,7 +125,8 @@ const strings = {
         items: [
           '新チーム：スペイン代表（フリオ・ロマンは近日追加）',
           '新キャラクター：加治 風多（U-17）、レオン・ウェイクフィールド（イギリス）',
-          '木更津 淳・柳沢慎也・佐伯虎次郎の写真を更新',
+          '木更津 淳、柳沢慎也、佐伯虎次郎、シルバ・セラ・バンビエーリ、プランス・ルドヴィック・シャルダール、キコ・バレンティン、新垣浩一の写真を更新',
+          'ページ下部にこれまでのプレイ回数を表示',
         ],
       },
     ],
