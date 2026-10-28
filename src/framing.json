@@ -29,6 +29,11 @@
     "y": 0.6,
     "zoom": 1
   },
+  "france-tristan-bardot": {
+    "x": 0.51,
+    "y": 0.39,
+    "zoom": 1
+  },
   "fudomine-kyosuke-uchimura": {
     "x": 0.5,
     "y": 0.55,
@@ -62,6 +67,11 @@
   "greece-zeus-iliopoulos": {
     "x": 0.5,
     "y": 0.55,
+    "zoom": 1
+  },
+  "higa-kouichi-aragaki": {
+    "x": 0.55,
+    "y": 0.42,
     "zoom": 1
   },
   "higa-tomoya-shiranui": {
@@ -162,6 +172,11 @@
   "usa-alan-hopkins": {
     "x": 0.531,
     "y": 0.314,
+    "zoom": 1
+  },
+  "usa-kiko-balentien": {
+    "x": 0.62,
+    "y": 0.4,
     "zoom": 1
   },
   "usa-oliver-phillips": {
