@@ -52,10 +52,29 @@ const strings = {
       {
         date: '2026-10-28',
         items: [
-          'New team: Spain',
+          'New team: Spain (all 8 players)',
           'New characters: Futa Kaji (U-17), Leon Wakefield (England)',
           'New photos for Atsushi Kisarazu, Shinya Yanagisawa, Kojiro Saeki, Silva Serra Banbieri, Prince Ludwig Chardard, Kiko Balentien and Kouichi Aragaki',
           'The total number of plays now shows at the bottom of the page',
+          'New: this Updates page, and a tip on the start page for choosing teams',
+        ],
+      },
+      {
+        date: '2026-10-27',
+        items: [
+          'New team: England',
+          'New characters: Liliadent Krauser (U-17), Ryo Kisarazu (Rokkaku)',
+          'New birthday artwork photos for many characters',
+          'Fixed: a quick double tap could pick a face you hadn’t seen yet',
+          'Fixed: on iPhone, photos briefly showed as colored letters before loading',
+          'Fixed: the saved-image preview looked squashed on iPads',
+        ],
+      },
+      {
+        date: '2026-10-26',
+        items: [
+          'If you skip a lot and end with fewer than 9, skipped characters now fill the empty spots',
+          'The Start button is now above the photo grid',
         ],
       },
     ],
@@ -123,10 +142,29 @@ const strings = {
       {
         date: '2026-10-28',
         items: [
-          '新チーム：スペイン代表',
+          '新チーム：スペイン代表（全8人）',
           '新キャラクター：加治 風多（U-17）、レオン・ウェイクフィールド（イギリス）',
           '木更津 淳、柳沢慎也、佐伯虎次郎、シルバ・セラ・バンビエーリ、プランス・ルドヴィック・シャルダール、キコ・バレンティン、新垣浩一の写真を更新',
           'ページ下部にこれまでのプレイ回数を表示',
+          'この更新情報ページと、スタート画面のチーム選択ヒントを追加',
+        ],
+      },
+      {
+        date: '2026-10-27',
+        items: [
+          '新チーム：イギリス代表',
+          '新キャラクター：リリアデント・クラウザー（U-17）、木更津 亮（六角）',
+          '多くのキャラクターに誕生日イラストの写真を追加',
+          '修正：素早く2回タップすると、まだ見ていない顔が選ばれることがある問題',
+          '修正：iPhoneで写真の読み込み前に色付きの文字が一瞬表示される問題',
+          '修正：iPadで保存画像のプレビューがつぶれて見える問題',
+        ],
+      },
+      {
+        date: '2026-10-26',
+        items: [
+          'スキップが多くTOP9に満たない場合、スキップしたキャラクターで空いた枠を埋めるように',
+          'スタートボタンを写真の上に移動',
         ],
       },
     ],

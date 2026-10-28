@@ -189,7 +189,7 @@ html:not(.touch) .pref:hover { border-color: var(--violet); color: var(--violet-
 .modal p { margin: 0 0 8px; }
 .modal a { color: var(--violet-text); font-weight: 700; }
 .modal .secondary { margin-top: 12px; }
-.modal.updates { max-width: 420px; text-align: left; }
+.modal.updates { max-width: 420px; max-height: 100%; overflow-y: auto; text-align: left; }
 .modal.updates h2, .modal.updates .secondary { display: block; margin-left: auto; margin-right: auto; text-align: center; }
 .modal.updates h3 { margin: 12px 0 6px; font-size: 13px; color: var(--muted); }
 .modal.updates ul { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; }
