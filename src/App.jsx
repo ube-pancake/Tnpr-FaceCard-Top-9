@@ -11,6 +11,7 @@ const playerMap = Object.fromEntries(players.map((player) => [player.id, player]
 const SAVE_KEY = 'favorite-faces-top9'
 const LANG_KEY = 'favorite-faces-lang'
 const THEME_KEY = 'favorite-faces-theme'
+const TEAM_TIP_KEY = 'favorite-faces-team-tip'
 const WAVEBOX_URL = 'https://wavebox.me/wave/6vf81qelg8m318zr/'
 const GITHUB_URL = 'https://github.com/ube-pancake'
 // Where the QR code on saved images points. Fixed, so images saved while testing locally point to the live site too.
@@ -132,9 +133,21 @@ function Intro({ onStart, resumeTeams, onResume, onEditFraming }) {
   const topCount = Math.min(TOP_COUNT, pool.length)
   const all = isAllTeams(teams)
   const toggle = (id) => setTeams((current) => normalizeTeams(current.includes(id) ? current.filter((team) => team !== id) : [...current, id]))
+  // Shown until it's dismissed once on this device.
+  const [showTip, setShowTip] = useState(() => readPref(TEAM_TIP_KEY) !== 'seen')
+  const closeTip = () => {
+    writePref(TEAM_TIP_KEY, 'seen')
+    setShowTip(false)
+  }
 
   return (
     <main className="screen intro">
+      {showTip && (
+        <div className="team-tip" role="note">
+          <p>{t.teamTip}</p>
+          <button onClick={closeTip}>{t.teamTipClose}</button>
+        </div>
+      )}
       <nav className="teams" aria-label={t.chooseTeam}>
         <p className="teams-title">{t.sortByTeam}</p>
         <TeamCheckbox
@@ -622,12 +635,37 @@ function About({ onClose }) {
   )
 }
 
-// About, Contact, language and theme, shown at the top of every screen.
-function Preferences({ theme, onToggleTheme, onToggleLang, onAbout }) {
+function Updates({ onClose }) {
+  const { lang, t } = useT()
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+  const dateFormat = new Intl.DateTimeFormat(lang === 'ja' ? 'ja-JP' : 'en-US', { year: 'numeric', month: lang === 'ja' ? 'long' : 'short', day: 'numeric', timeZone: 'UTC' })
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal updates" role="dialog" aria-modal="true" aria-label={t.updatesTitle} onClick={(event) => event.stopPropagation()}>
+        <h2>{t.updatesTitle}</h2>
+        {t.updatesList.map(({ date, items }) => (
+          <section key={date}>
+            <h3>{dateFormat.format(new Date(date))}</h3>
+            <ul>{items.map((item) => <li key={item}>{item}</li>)}</ul>
+          </section>
+        ))}
+        <button className="secondary" onClick={onClose}>{t.close}</button>
+      </div>
+    </div>
+  )
+}
+
+// Updates, About, Contact, language and theme, shown at the top of every screen.
+function Preferences({ theme, onToggleTheme, onToggleLang, onAbout, onUpdates }) {
   const { t } = useT()
   const dark = theme === 'dark'
   return (
     <div className="prefs">
+      <button className="pref" onClick={onUpdates}>{t.updates}</button>
       <button className="pref" onClick={onAbout}>{t.about}</button>
       <a className="pref" href={WAVEBOX_URL} target="_blank" rel="noopener noreferrer">{t.contact}</a>
       <button className="pref" onClick={onToggleLang} aria-label={t.otherLanguageLabel}>{t.otherLanguage}</button>
@@ -666,6 +704,7 @@ export default function App() {
   const [saved, setSaved] = useState(loadSaved)
   const [editingFraming, setEditingFraming] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
+  const [showUpdates, setShowUpdates] = useState(false)
   const [welcomed, setWelcomed] = useState(false)
   const [lang, setLang] = useState(() => (readPref(LANG_KEY) === 'ja' ? 'ja' : 'en'))
   // A theme chosen with the toggle wins; until then the page follows the device.
@@ -779,10 +818,12 @@ export default function App() {
         onToggleTheme={toggleTheme}
         onToggleLang={() => setLang(lang === 'ja' ? 'en' : 'ja')}
         onAbout={() => setShowAbout(true)}
+        onUpdates={() => setShowUpdates(true)}
       />
       {screen}
       <Footer />
       {showAbout && <About onClose={() => setShowAbout(false)} />}
+      {showUpdates && <Updates onClose={() => setShowUpdates(false)} />}
     </LangContext.Provider>
   )
 }

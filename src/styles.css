@@ -37,6 +37,21 @@ html:not(.touch) .clear:not(:disabled):hover { border-color: var(--violet); colo
 .team small { color: var(--muted); font-size: 12px; font-weight: 500; }
 html:not(.touch) .team:hover { background: var(--soft); }
 .team.active { background: rgba(122,108,240,.14); background: color-mix(in srgb, var(--violet) 14%, var(--surface)); color: var(--violet-text); box-shadow: inset 0 0 0 1.5px var(--violet); }
+/* One-time tip pointing at the team list: to its left on wide screens, over the photos beside it on
+   narrower ones, and above the team chips on phones. */
+.intro { position: relative; }
+.team-tip { position: absolute; z-index: 5; top: 120px; right: calc(100% + 16px); width: 210px; padding: 12px 14px; border-radius: 12px; background: var(--ink); color: var(--surface); font-size: 13px; line-height: 1.5; text-align: left; box-shadow: 0 8px 24px rgba(0,0,0,.18); }
+.team-tip::after { content: ""; position: absolute; top: 18px; right: -6px; width: 12px; height: 12px; background: inherit; transform: rotate(45deg); }
+.team-tip p { margin: 0 0 8px; }
+.team-tip button { padding: 4px 12px; border: 0; border-radius: 99px; background: var(--surface); color: var(--ink); font-size: 12px; font-weight: 800; }
+@media (max-width: 1340px) {
+  .team-tip { top: 230px; right: auto; left: 224px; }
+  .team-tip::after { right: auto; left: -6px; }
+}
+@media (max-width: 760px) {
+  .team-tip { position: relative; top: 0; left: 0; width: auto; margin: 0 0 14px; }
+  .team-tip::after { top: auto; bottom: -6px; left: 28px; }
+}
 @media (max-width: 760px) {
   .intro { display: block; }
   .teams { position: static; flex-direction: row; overflow-x: auto; margin: 0 -16px 16px; padding: 4px 16px 8px; border: 0; border-radius: 0; scrollbar-width: none; }
@@ -154,7 +169,12 @@ html:not(.touch) .card:hover, .card:focus-visible { border-color: var(--violet);
 .pref { display: inline-flex; align-items: center; min-height: 34px; padding: 6px 12px; text-decoration: none; letter-spacing: .02em; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 700; }
 .pref + .pref { margin-left: 8px; }
 html:not(.touch) .pref:hover { border-color: var(--violet); color: var(--violet-text); }
-@media (max-width: 420px) { .pref span { display: none; } }
+@media (max-width: 420px) {
+  .pref span { display: none; }
+  /* Five buttons have to fit across a phone. */
+  .pref { padding: 6px 9px; letter-spacing: 0; font-size: 12px; }
+  .pref + .pref { margin-left: 5px; }
+}
 .prefs + .screen { padding-top: 8px; }
 
 .footer { max-width: 560px; margin: 0 auto; padding: 20px 16px 40px; border-top: 1px solid var(--line); text-align: center; font-size: 13px; line-height: 1.6; color: var(--muted); }
@@ -167,6 +187,10 @@ html:not(.touch) .pref:hover { border-color: var(--violet); color: var(--violet-
 .modal p { margin: 0 0 8px; }
 .modal a { color: var(--violet-text); font-weight: 700; }
 .modal .secondary { margin-top: 12px; }
+.modal.updates { max-width: 420px; text-align: left; }
+.modal.updates h2, .modal.updates .secondary { display: block; margin-left: auto; margin-right: auto; text-align: center; }
+.modal.updates h3 { margin: 12px 0 6px; font-size: 13px; color: var(--muted); }
+.modal.updates ul { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; }
 /* Save preview: the finished image plus save buttons, on phones and computers */
 .save-preview { overflow: hidden; }
 .save-panel { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 520px; max-height: 100%; overflow-y: auto; padding: 18px 16px 12px; border-radius: 16px; background: var(--surface); color: var(--ink); text-align: center; }
@@ -188,5 +212,7 @@ html:not(.touch) .save-panel .save-image img:hover { box-shadow: 0 0 0 3px var(-
 .nowrap { white-space: nowrap; }
 .primary.start-top { margin: 0 0 16px; }
 .filled-note { max-width: 32em; margin: 4px auto 14px; padding: 8px 12px; border-radius: 10px; font-size: 13px; color: var(--ink); background: var(--soft); }
-.welcome .sub { max-width: 34em; margin-left: auto; margin-right: auto; }
+.welcome .sub { max-width: 34em; margin-left: auto; margin-right: auto; color: var(--ink); }
+/* A softer, dark-grey title so the message under it stands out. */
+.welcome h1 { color: #4a4a55; color: color-mix(in srgb, var(--ink) 75%, var(--bg)); }
 

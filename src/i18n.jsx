@@ -45,6 +45,21 @@ const strings = {
     clearSelection: 'Clear selection',
     pickTeam: 'Pick at least one team to start.',
     about: 'About',
+    updates: 'Updates',
+    updatesTitle: 'Updates',
+    // Newest first. Dates are YYYY-MM-DD and shown in the page language.
+    updatesList: [
+      {
+        date: '2026-10-28',
+        items: [
+          'Spain team addition in the works',
+          'New character: Futa Kaji (U-17)',
+          'New photos for Atsushi Kisarazu, Shinya Yanagisawa and Kojiro Saeki',
+        ],
+      },
+    ],
+    teamTip: 'Tip: tick or untick the boxes to choose which teams are in your ranking.',
+    teamTipClose: 'Got it',
     contact: 'Contact',
     aboutTitle: 'About',
     madeBy: 'made by',
@@ -100,6 +115,20 @@ const strings = {
     clearSelection: '選択をクリア',
     pickTeam: 'チームを1つ以上選んでください。',
     about: 'About',
+    updates: 'Updates',
+    updatesTitle: '更新情報',
+    updatesList: [
+      {
+        date: '2026-10-28',
+        items: [
+          'スペイン代表を準備中',
+          '新キャラクター：加治 風多（U-17）',
+          '木更津 淳・柳沢慎也・佐伯虎次郎の写真を更新',
+        ],
+      },
+    ],
+    teamTip: 'ヒント：チェックを付けたり外したりして、ランキングに入れるチームを選べます。',
+    teamTipClose: 'OK',
     contact: 'Contact',
     aboutTitle: 'このサイトについて',
     madeBy: '制作',
@@ -111,7 +140,7 @@ const strings = {
     pressHoldShort: '保存されない場合は、上の画像を長押ししてください。',
     filledNote: (picked, total) => `選ばれたのが${picked}人で${total}人に満たなかったため、空いた枠にスキップしたキャラクターを戻しています。`,
     welcomeTitle: 'はじめに',
-    welcomeText: (wavebox) => <>このランキングには、まだ登場していないキャラクターがいます。<span className="nowrap">Rising Beat（テニラビ）</span>に登場しないキャラクターの写真を<span className="nowrap">募集しています。</span><br />{wavebox}からお気軽にお送りください。</>,
+    welcomeText: (wavebox) => <>このランキングには、まだ登場していないキャラクターがいます。<span className="nowrap">Rising Beat（テニラビ）</span>に登場しないキャラクターの写真を<span className="nowrap">募集しています。</span><br />{wavebox}からお気軽にお送りください（画像のURLでお願いします）。</>,
     welcomeContinue: '次へ →',
   },
 }
