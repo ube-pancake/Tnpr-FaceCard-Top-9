@@ -99,6 +99,41 @@
     "y": 0.3,
     "zoom": 1.1
   },
+  "spain-antokino-da-medanore": {
+    "x": 0.685,
+    "y": 0.322,
+    "zoom": 2.45
+  },
+  "spain-julio-roman": {
+    "x": 0.412,
+    "y": 0.468,
+    "zoom": 3
+  },
+  "spain-mars-de-colon": {
+    "x": 0.689,
+    "y": 0.215,
+    "zoom": 1.9
+  },
+  "spain-rodrigo-roca-rodrigo": {
+    "x": 0.515,
+    "y": 0.286,
+    "zoom": 3
+  },
+  "spain-romeo-fernandez": {
+    "x": 0.596,
+    "y": 0.375,
+    "zoom": 1.6
+  },
+  "spain-sedah": {
+    "x": 0.315,
+    "y": 0.789,
+    "zoom": 3
+  },
+  "spain-silva-serra-banbieri": {
+    "x": 0.427,
+    "y": 0.105,
+    "zoom": 1.6
+  },
   "switzerland-albert-federer": {
     "x": 0.5,
     "y": 0.55,

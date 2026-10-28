@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { activeSchools, players } from './data.js'
+import { framingPlayers as players, framingSchools as activeSchools } from './data.js'
 import { DEFAULT_FRAME, frameFor, frames } from './framing.js'
 
 // Local-only tool: click the face on each photo so every crop centers on it.

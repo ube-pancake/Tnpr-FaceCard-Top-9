@@ -212,9 +212,9 @@ const slugify = (value) => value.toLowerCase().replace(/[.']/g, '').replace(/[^a
 const photoFor = (schoolId, name) => photos[`${schoolId}/${slugify(name)}`]
 
 // Teams kept off the site even though some photos are in; remove a team here to show it.
-const HIDDEN_TEAMS = ['spain']
+const HIDDEN_TEAMS = []
 
-export const players = Object.entries(roster).filter(([schoolId]) => !HIDDEN_TEAMS.includes(schoolId)).flatMap(([schoolId, names]) =>
+const withPhotos = Object.entries(roster).flatMap(([schoolId, names]) =>
   names.filter((name) => photoFor(schoolId, name)).map((name, index) => ({
     id: `${schoolId}-${slugify(name)}`,
     name,
@@ -224,7 +224,13 @@ export const players = Object.entries(roster).filter(([schoolId]) => !HIDDEN_TEA
     image: `${import.meta.env.BASE_URL}players/${schoolId}/${photoFor(schoolId, name)}`,
   })),
 )
+const schoolsOf = (list) => schools.filter((school) => list.some((player) => player.schoolId === school.id))
 
-export const activeSchools = schools.filter((school) => players.some((player) => player.schoolId === school.id))
+export const players = withPhotos.filter((player) => !HIDDEN_TEAMS.includes(player.schoolId))
+export const activeSchools = schoolsOf(players)
+
+// The local framing tool also lists hidden teams, so their photos can be framed before they go live.
+export const framingPlayers = withPhotos
+export const framingSchools = schoolsOf(withPhotos)
 
 export const schoolMap = Object.fromEntries(schools.map((school) => [school.id, school]))
