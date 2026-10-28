@@ -47,7 +47,10 @@ const roster = {
   australia: ['Jean Fitzgerald', 'Chris Hopman', 'Mac McGregor', 'J.J. Dolgius', 'Milky Milman', 'Noah J. Dolgius', 'Bill Hewitt'],
   switzerland: ['Alexander Amadeus', 'Peter Lambiere', 'Henry Nobel III', 'Albert Federer', 'Randy Pug'],
   england: ['Eric Paddington', 'Charlie Palmer'],
-  spain: ['Antonio da Medanore', 'Julio Roman', 'Mars de Colon', 'Silva Serra Banbieri', 'Romeo Fernandez', 'Sedah'],
+  spain: [
+    'Antonio da Medanore', 'Antokino da Medanore', 'Julio Roman', 'Mars de Colon', 'Silva Serra Banbieri', 'Romeo Fernandez', 'Sedah',
+    'Rodrigo Roca Rodrigo',
+  ],
   other: ['Nanjiro Echizen', 'Sasabe', 'Reiji Kamishiro', 'Tsubasa Hanamura'],
 }
 
@@ -194,6 +197,8 @@ const japaneseNames = {
   'Silva Serra Banbieri': 'シルバ・セラ・バンビエーリ',
   'Romeo Fernandez': 'ロミオ・フェルナンデス',
   Sedah: 'セダ',
+  'Antokino da Medanore': 'アントキノ・ダ・メダノレ',
+  'Rodrigo Roca Rodrigo': 'ロドリゴ・ロカ・ロドリーゴ',
   'Nanjiro Echizen': '越前南次郎',
   Sasabe: '佐々部',
   'Reiji Kamishiro': '神城玲治',
