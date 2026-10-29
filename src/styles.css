@@ -104,8 +104,10 @@ html:not(.touch) .team:hover { background: var(--soft); }
 .choice.back:disabled { opacity: .4; cursor: default; }
 .choice.neither { display: flex; align-items: center; border: 2px solid var(--ink); background: var(--ink); color: var(--surface); }
 .choice-hint { margin-right: 8px; font-size: 12px; font-weight: 600; opacity: .75; }
+.choice.neither:disabled { opacity: .35; cursor: default; }
+.skip-off { max-width: 30em; margin: 10px auto 0; font-size: 13px; color: var(--muted); }
 html:not(.touch) .choice.back:not(:disabled):hover { border-color: var(--violet); }
-html:not(.touch) .choice.neither:hover { opacity: .85; }
+html:not(.touch) .choice.neither:not(:disabled):hover { opacity: .85; }
 .choice:active:not(:disabled) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--violet) 30%, transparent); }
 .keys { margin: 14px 0 0; font-size: 12px; color: var(--muted); }
 .touch .keys { display: none; }
@@ -189,6 +191,7 @@ html:not(.touch) .pref:hover { border-color: var(--violet); color: var(--violet-
 .modal p { margin: 0 0 8px; }
 .modal a { color: var(--violet-text); font-weight: 700; }
 .modal .secondary { margin-top: 12px; }
+.modal .primary + .secondary { display: block; width: 100%; max-width: 380px; margin: 10px auto 0; }
 .modal.updates { max-width: 420px; max-height: 100%; overflow-y: auto; text-align: left; }
 .modal.updates h2, .modal.updates .secondary { display: block; margin-left: auto; margin-right: auto; text-align: center; }
 .modal.updates h3 { margin: 12px 0 6px; font-size: 13px; color: var(--muted); }

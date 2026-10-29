@@ -69,6 +69,15 @@ export const choose = (state, ids, side) => {
   return settle({ ...state, lostTo, next: [...state.next, winner], index: state.index + 2, picks: state.picks + 1 }, ids)
 }
 
+// "Neither" removes both characters for good, so it's only allowed while enough are left to fill the
+// top list with real picks. Without this, a player who skips a lot ends with just a #1 and #2.
+export const canSkip = (state, ids) => {
+  const target = Math.min(TOP_COUNT, ids.length)
+  const rankedSet = new Set(state.ranked)
+  const left = ids.filter((id) => !rankedSet.has(id) && !state.lostTo[id].includes(NOBODY)).length
+  return left - 2 >= target - state.ranked.length
+}
+
 export const chooseNeither = (state, ids) => {
   const [a, b] = currentPair(state)
   const lostTo = { ...state.lostTo, [a]: [...state.lostTo[a], NOBODY], [b]: [...state.lostTo[b], NOBODY] }

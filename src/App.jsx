@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { activeSchools, players, schoolMap } from './data.js'
-import { TOP_COUNT, choose, chooseNeither, currentPair, fillRanking, progress, startSort } from './sorter.js'
+import { TOP_COUNT, canSkip, choose, chooseNeither, currentPair, fillRanking, progress, startSort } from './sorter.js'
 import { frameFor, layoutFor, toStyle } from './framing.js'
 import FrameEditor from './FrameEditor.jsx'
 import { fetchPlayCount, sendResult } from './results.js'
@@ -133,6 +133,8 @@ function Intro({ onStart, resumeTeams, onResume, onEditFraming }) {
   const topCount = Math.min(TOP_COUNT, pool.length)
   const all = isAllTeams(teams)
   const toggle = (id) => setTeams((current) => normalizeTeams(current.includes(id) ? current.filter((team) => team !== id) : [...current, id]))
+  const [warnSmall, setWarnSmall] = useState(false)
+  const start = () => (pool.length < TOP_COUNT ? setWarnSmall(true) : onStart(teams))
   // Shown until it's dismissed once on this device.
   const [showTip, setShowTip] = useState(() => readPref(TEAM_TIP_KEY) !== 'seen')
   const closeTip = () => {
@@ -174,21 +176,43 @@ function Intro({ onStart, resumeTeams, onResume, onEditFraming }) {
         <p className="eyebrow">{t.brand}{teams.length > 0 && !all && ` · ${teamsLabel(teams)}`}</p>
         <h1><Accented parts={t.title(topCount || TOP_COUNT)} /></h1>
         <p className="sub">{t.sub}</p>
-        <button className="primary start-top" onClick={() => onStart(teams)} disabled={!pool.length}>{t.start}</button>
+        <button className="primary start-top" onClick={start} disabled={!pool.length}>{t.start}</button>
         <div className="grid3 preview">
           {preview.map((player) => <Portrait key={player.id} player={player} />)}
           {!preview.length && <p className="pick-hint">{t.pickTeam}</p>}
         </div>
-        <p className="count">{pool.length ? t.count(topCount, pool.length, !all && teamsLabel(teams)) : t.pickTeam}</p>        {onResume && <button className="link" onClick={onResume}>{t.resume(teamsLabel(resumeTeams))}</button>}
+        <p className="count">{pool.length ? t.count(topCount, pool.length, !all && teamsLabel(teams)) : t.pickTeam}</p>
+        {onResume && <button className="link" onClick={onResume}>{t.resume(teamsLabel(resumeTeams))}</button>}
         {import.meta.env.DEV && <button className="link" onClick={onEditFraming}>Adjust photo framing (local only)</button>}
       </section>
+      {warnSmall && <SmallPoolWarning count={pool.length} onStart={() => onStart(teams)} onClose={() => setWarnSmall(false)} />}
     </main>
+  )
+}
+
+// Not a lock: a short list still works, it just can't fill the 3×3 result grid.
+function SmallPoolWarning({ count, onStart, onClose }) {
+  const { t } = useT()
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" role="dialog" aria-modal="true" aria-label={t.smallPoolTitle} onClick={(event) => event.stopPropagation()}>
+        <h2>{t.smallPoolTitle}</h2>
+        <p>{t.smallPoolText(count)}</p>
+        <button className="primary" onClick={onStart} autoFocus>{t.smallPoolStart}</button>
+        <button className="secondary" onClick={onClose}>{t.smallPoolBack}</button>
+      </div>
+    </div>
   )
 }
 
 const TAP_GUARD_MS = 400
 
-function Matchup({ state, history, count, teams, onPick, onNeither, onBack, onHome }) {
+function Matchup({ state, history, count, teams, onPick, onNeither, canNeither, onBack, onHome }) {
   const { t, nameOf, altNameOf, teamName, teamsLabel } = useT()
   const pair = currentPair(state)
   // "Neither" can bring earlier losers back, which would make the estimate dip; show the best
@@ -247,10 +271,11 @@ function Matchup({ state, history, count, teams, onPick, onNeither, onBack, onHo
       </div>
       <div className="choices">
         <button className="choice back" onClick={onBack} disabled={history.length < 2}>{t.back}</button>
-        <button className="choice neither" onClick={tap(onNeither)}>
+        <button className="choice neither" onClick={tap(onNeither)} disabled={!canNeither}>
           <span className="choice-hint">{t.neitherHint}</span> {t.neither}
         </button>
       </div>
+      {!canNeither && <p className="skip-off">{t.skipOff(Math.min(TOP_COUNT, count))}</p>}
       <p className="keys">{t.keys}</p>
     </main>
   )
@@ -777,7 +802,7 @@ export default function App() {
   })
   const pickNeither = () => updateHistory((current) => {
     const latest = current[current.length - 1]
-    return latest.done ? current : [...current, chooseNeither(latest, ids)]
+    return latest.done || !canSkip(latest, ids) ? current : [...current, chooseNeither(latest, ids)]
   })
   const restart = () => {
     setSaved(loadSaved())
@@ -811,6 +836,7 @@ export default function App() {
         teams={session.teams}
         onPick={pick}
         onNeither={pickNeither}
+        canNeither={canSkip(state, ids)}
         onBack={() => updateHistory((current) => current.slice(0, -1))}
         onHome={restart}
       />

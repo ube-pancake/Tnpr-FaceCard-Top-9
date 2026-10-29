@@ -19,6 +19,11 @@ const strings = {
     back: '← Back',
     neitherHint: 'Like neither?',
     neither: 'Skip both ✕',
+    skipOff: (n) => `Skipping is off now so your Top ${n} can be filled. Pick the face you like more.`,
+    smallPoolTitle: 'You selected fewer than 9 characters',
+    smallPoolText: (n) => `Your selection only has ${n} characters, so your result will show ${n} faces instead of 9 and the grid will look uneven.`,
+    smallPoolStart: 'Start anyway',
+    smallPoolBack: 'Pick more teams',
     keys: 'Keyboard: ← left · → right · ↓ neither',
     yourResult: 'Your result',
     resultTitle: (n) => ['My ', `Top ${n}`, ' Faces'],
@@ -49,6 +54,13 @@ const strings = {
     updatesTitle: 'Updates',
     // Newest first. Dates are YYYY-MM-DD and shown in the page language.
     updatesList: [
+      {
+        date: '2026-10-29',
+        items: [
+          'Your result now always has a full Top 9: “Skip both” turns off when skipping again would leave too few faces',
+          'A heads-up now appears if the teams you pick have fewer than 9 characters',
+        ],
+      },
       {
         date: '2026-10-28',
         items: [
@@ -110,6 +122,11 @@ const strings = {
     back: '← 戻る',
     neitherHint: 'どちらも違う？',
     neither: '両方スキップ ✕',
+    skipOff: (n) => `TOP${n}を埋めるため、今はスキップできません。好きな方を選んでください。`,
+    smallPoolTitle: '選んだのが9人未満です',
+    smallPoolText: (n) => `選んだチームには${n}人しかいないため、結果は9人ではなく${n}人になり、グリッドが不揃いになります。`,
+    smallPoolStart: 'このまま始める',
+    smallPoolBack: 'チームを追加する',
     keys: 'キーボード：← 左 · → 右 · ↓ どちらも',
     yourResult: 'あなたの結果',
     resultTitle: (n) => ['私の好き顔', `TOP${n}`, null],
@@ -139,6 +156,13 @@ const strings = {
     updates: 'Updates',
     updatesTitle: '更新情報',
     updatesList: [
+      {
+        date: '2026-10-29',
+        items: [
+          '結果が必ずTOP9になるように：スキップしすぎて人数が足りなくなる場合は「両方スキップ」が使えなくなります',
+          '選んだチームが9人未満のときにお知らせを表示',
+        ],
+      },
       {
         date: '2026-10-28',
         items: [
