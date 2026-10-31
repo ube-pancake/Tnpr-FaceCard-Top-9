@@ -215,14 +215,10 @@ const TAP_GUARD_MS = 400
 function Matchup({ state, history, count, teams, onPick, onNeither, canNeither, onBack, onHome }) {
   const { t, nameOf, altNameOf, teamName, teamsLabel } = useT()
   const pair = currentPair(state)
-  // "Neither" can bring earlier losers back, which would make the estimate dip; show the best
-  // value reached so far at or before this step, so it only goes down when the player steps back.
-  const best = useRef([])
-  const estimate = progress(state, count)
-  const percent = Math.max(estimate, ...best.current.slice(0, history.length - 1))
-  useEffect(() => {
-    best.current = [...best.current.slice(0, history.length - 1), percent]
-  }, [history.length, percent])
+  // The estimate of picks left can rise when a new round starts or "Neither" brings earlier losers
+  // back, so show the best value reached anywhere in the saved history. Working it out from the
+  // history (not from memory) keeps it after a reload or Resume, and Back still lowers it.
+  const percent = Math.max(...history.map((step) => progress(step, count)))
 
   // The next pair appears where the last tap landed, so a double tap (or one registered twice by a
   // slow phone) would pick a face nobody saw. Ignore taps until the new pair has been on screen briefly.
