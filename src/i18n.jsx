@@ -55,6 +55,10 @@ const strings = {
     // Newest first. Dates are YYYY-MM-DD and shown in the page language.
     updatesList: [
       {
+        date: '2026-11-01',
+        items: ['New: the Global Ranking page, with the overall Top 20 as of November 1'],
+      },
+      {
         date: '2026-10-29',
         items: [
           'Your result now always has a full Top 9: “Skip both” turns off when skipping again would leave too few faces',
@@ -94,6 +98,14 @@ const strings = {
     teamTipClose: 'Got it',
     playCount: (n) => <>🎾 Played <b>{n.toLocaleString('en-US')}</b> times so far</>,
     contact: 'Contact',
+    rankingNav: 'Global Ranking',
+    rankingTitle: ['Global ', 'Ranking', null],
+    rankingAsOf: (date, plays, n) => `Top ${n} as of ${date}, from ${plays.toLocaleString('en-US')} plays`,
+    rankingPoints: 'Each #1 earns 9 points, #2 earns 8, down to 1 point for #9.',
+    rankingScore: (points) => `${points.toLocaleString('en-US')} pts`,
+    rankingNewsTitle: 'The Global Ranking is up!',
+    rankingNewsText: (date, n) => `See the overall Top ${n} as of ${date}.`,
+    rankingNewsOpen: 'See the ranking →',
     aboutTitle: 'About',
     madeBy: 'made by',
     imageCredit: 'sorter made by ube',
@@ -157,6 +169,10 @@ const strings = {
     updatesTitle: '更新情報',
     updatesList: [
       {
+        date: '2026-11-01',
+        items: ['新ページ：11月1日時点の総合ランキングTOP20を公開'],
+      },
+      {
         date: '2026-10-29',
         items: [
           '結果が必ずTOP9になるように：スキップしすぎて人数が足りなくなる場合は「両方スキップ」が使えなくなります',
@@ -196,6 +212,14 @@ const strings = {
     teamTipClose: 'OK',
     playCount: (n) => <>🎾 これまでのプレイ回数：<b>{n.toLocaleString('ja-JP')}</b>回</>,
     contact: 'Contact',
+    rankingNav: '総合ランキング',
+    rankingTitle: ['総合', 'ランキング', null],
+    rankingAsOf: (date, plays, n) => `${date}時点のTOP${n}・${plays.toLocaleString('ja-JP')}回のプレイより`,
+    rankingPoints: '1位は9点、2位は8点、9位は1点として集計しています。',
+    rankingScore: (points) => `${points.toLocaleString('ja-JP')}点`,
+    rankingNewsTitle: '総合ランキングを公開しました！',
+    rankingNewsText: (date, n) => `${date}時点の総合ランキングTOP${n}をご覧いただけます。`,
+    rankingNewsOpen: 'ランキングを見る →',
     aboutTitle: 'このサイトについて',
     madeBy: '制作',
     imageCredit: 'sorter made by ube',

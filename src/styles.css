@@ -158,6 +158,31 @@ html:not(.touch) .card:hover, .card:focus-visible { border-color: var(--violet);
 .ranking .name { font-size: 16px; font-weight: 600; }
 .ranking .name small { margin-left: 8px; font-size: 12px; font-weight: 400; color: var(--muted); }
 .ranking .meta { font-size: 12px; color: var(--muted); }
+/* Global Ranking page: one top-down list, with bigger photos for the Top 9 */
+.global .ranking { margin-top: 12px; padding: 8px 16px; }
+.global .ranking li { gap: 12px; }
+.global .ranking li > b { flex: none; min-width: 40px; font-size: 14px; }
+.global .ranking li > span { flex: 1; min-width: 0; }
+.global .ranking .name small { display: block; margin-left: 0; }
+.global .ranking .points { margin-top: 2px; font-size: 13px; font-weight: 700; color: var(--violet-text); }
+.global .thumb { flex: none; width: 48px; border-radius: 8px; }
+.global .ranking li.top > b { font-size: 18px; font-weight: 800; }
+.global .ranking li.top .thumb { width: 112px; border-radius: 12px; }
+.global .ranking li.top .name { font-size: 18px; font-weight: 800; line-height: 1.25; }
+.global .ranking li.first > b { color: var(--pink); font-size: 22px; }
+.global .ranking li.first .thumb { box-shadow: 0 0 0 3px var(--pink), 0 6px 22px rgba(240,56,155,.4); }
+.global .ranking li.first .name { color: var(--pink); }
+.global .ranking li.first .name small { color: var(--muted); }
+.global .ranking .name { overflow-wrap: anywhere; }
+@media (max-width: 420px) {
+  .global .ranking { padding: 8px 12px; }
+  .global .ranking li { gap: 10px; }
+  .global .ranking li > b { min-width: 34px; font-size: 13px; }
+  .global .ranking li.top > b, .global .ranking li.first > b { font-size: 15px; }
+  .global .ranking li.top .thumb { width: 84px; }
+  .global .ranking li.top .name { font-size: 16px; }
+}
+.global .topbar { margin-bottom: 4px; }
 .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
 .actions .primary { width: auto; margin: 0; }
 .actions .primary:disabled { opacity: .6; cursor: default; }
@@ -169,13 +194,13 @@ html:not(.touch) .card:hover, .card:focus-visible { border-color: var(--violet);
 .notice { min-height: 20px; font-size: 13px; color: var(--muted); }
 
 /* Language and theme switches, top right of every screen */
-.prefs { display: flex; justify-content: flex-end; max-width: 860px; margin: 0 auto; padding: 12px 16px 0; }
+.prefs { display: flex; flex-wrap: wrap; row-gap: 6px; justify-content: flex-end; max-width: 860px; margin: 0 auto; padding: 12px 16px 0; }
 .pref { display: inline-flex; align-items: center; min-height: 34px; padding: 6px 12px; text-decoration: none; letter-spacing: .02em; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 700; }
 .pref + .pref { margin-left: 8px; }
 html:not(.touch) .pref:hover { border-color: var(--violet); color: var(--violet-text); }
 @media (max-width: 420px) {
   .pref span { display: none; }
-  /* Five buttons have to fit across a phone. */
+  /* Keep the buttons compact on a phone. */
   .pref { padding: 6px 9px; letter-spacing: 0; font-size: 12px; }
   .pref + .pref { margin-left: 5px; }
 }

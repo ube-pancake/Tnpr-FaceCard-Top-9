@@ -6,8 +6,15 @@ import { frameFor, layoutFor, toStyle } from './framing.js'
 import FrameEditor from './FrameEditor.jsx'
 import { fetchPlayCount, sendResult } from './results.js'
 import { Accented, LangContext, useT } from './i18n.jsx'
+import globalRanking from './globalRanking.json'
 
 const playerMap = Object.fromEntries(players.map((player) => [player.id, player]))
+// The sheet stores English names. Anyone no longer on the site is left out of the ranking page.
+const playerByName = Object.fromEntries(players.map((player) => [player.name, player]))
+const globalEntries = globalRanking.entries
+  .filter((entry) => playerByName[entry.name])
+  .map((entry, i) => ({ ...entry, rank: i + 1, player: playerByName[entry.name] }))
+const RANKING_NEWS_KEY = 'favorite-faces-ranking-news'
 const SAVE_KEY = 'favorite-faces-top9'
 const LANG_KEY = 'favorite-faces-lang'
 const THEME_KEY = 'favorite-faces-theme'
@@ -679,8 +686,68 @@ function Updates({ onClose }) {
   )
 }
 
-// Updates, About, Contact, language and theme, shown at the top of every screen.
-function Preferences({ theme, onToggleTheme, onToggleLang, onAbout, onUpdates }) {
+const longDate = (lang, date) =>
+  new Intl.DateTimeFormat(lang === 'ja' ? 'ja-JP' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }).format(new Date(date))
+
+// The overall ranking: a saved copy of the sheet's Ranking tab, so it stays as of the date shown.
+function GlobalRanking({ onBack }) {
+  const { lang, t, nameOf, altNameOf, teamName } = useT()
+  useEffect(() => { window.scrollTo(0, 0) }, [])
+  return (
+    <main className="screen global">
+      <div className="topbar">
+        <button className="home" onClick={onBack}>{t.back}</button>
+      </div>
+      <p className="eyebrow">{t.brand}</p>
+      <h1><Accented parts={t.rankingTitle} /></h1>
+      <p className="sub">
+        {t.rankingAsOf(longDate(lang, globalRanking.asOf), globalRanking.plays, globalEntries.length)}
+        <br />
+        {t.rankingPoints}
+      </p>
+      <section className="ranking">
+        <ol>
+          {globalEntries.map(({ rank, player, points }) => {
+            return (
+              <li key={player.id} className={`${rank <= TOP_COUNT ? 'top' : ''}${rank === 1 ? ' first' : ''}`}>
+                <b>{t.rank(rank)}</b>
+                <Portrait player={player} aspect={1} className="thumb" />
+                <span>
+                  <span className="name">{nameOf(player)}<small>{altNameOf(player)}</small></span>
+                  <span className="meta">{teamName(player.schoolId)}</span>
+                  <span className="points">{t.rankingScore(points)}</span>
+                </span>
+              </li>
+            )
+          })}
+        </ol>
+      </section>
+    </main>
+  )
+}
+
+// Shown once per device for each new saved ranking.
+function RankingNews({ onOpen, onClose }) {
+  const { lang, t } = useT()
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" role="dialog" aria-modal="true" aria-label={t.rankingNewsTitle} onClick={(event) => event.stopPropagation()}>
+        <h2>{t.rankingNewsTitle}</h2>
+        <p>{t.rankingNewsText(longDate(lang, globalRanking.asOf), globalEntries.length)}</p>
+        <button className="primary" onClick={onOpen} autoFocus>{t.rankingNewsOpen}</button>
+        <button className="secondary" onClick={onClose}>{t.close}</button>
+      </div>
+    </div>
+  )
+}
+
+// Updates, About, Contact, Global Ranking, language and theme, shown at the top of every screen.
+function Preferences({ theme, onToggleTheme, onToggleLang, onAbout, onUpdates, onRanking }) {
   const { t } = useT()
   const dark = theme === 'dark'
   return (
@@ -688,6 +755,7 @@ function Preferences({ theme, onToggleTheme, onToggleLang, onAbout, onUpdates })
       <button className="pref" onClick={onUpdates}>{t.updates}</button>
       <button className="pref" onClick={onAbout}>{t.about}</button>
       <a className="pref" href={WAVEBOX_URL} target="_blank" rel="noopener noreferrer">{t.contact}</a>
+      {globalEntries.length > 0 && <button className="pref" onClick={onRanking}>{t.rankingNav}</button>}
       <button className="pref" onClick={onToggleLang} aria-label={t.otherLanguageLabel}>{t.otherLanguage}</button>
       <button className="pref" onClick={onToggleTheme} aria-pressed={dark} aria-label={dark ? t.lightMode : t.darkMode}>
         {dark ? '☀' : '☾'} <span>{dark ? t.lightMode : t.darkMode}</span>
@@ -732,6 +800,12 @@ export default function App() {
   const [editingFraming, setEditingFraming] = useState(false)
   const [showAbout, setShowAbout] = useState(false)
   const [showUpdates, setShowUpdates] = useState(false)
+  const [showRanking, setShowRanking] = useState(false)
+  const [showNews, setShowNews] = useState(() => globalEntries.length > 0 && readPref(RANKING_NEWS_KEY) !== globalRanking.asOf)
+  const closeNews = () => {
+    writePref(RANKING_NEWS_KEY, globalRanking.asOf)
+    setShowNews(false)
+  }
   const [welcomed, setWelcomed] = useState(false)
   const [lang, setLang] = useState(() => (readPref(LANG_KEY) === 'ja' ? 'ja' : 'en'))
   // A theme chosen with the toggle wins; until then the page follows the device.
@@ -806,7 +880,9 @@ export default function App() {
   }
 
   let screen
-  if (editingFraming) {
+  if (showRanking) {
+    screen = <GlobalRanking onBack={() => setShowRanking(false)} />
+  } else if (editingFraming) {
     screen = <FrameEditor Portrait={Portrait} onClose={() => setEditingFraming(false)} />
   } else if (!welcomed) {
     screen = <Welcome onContinue={() => setWelcomed(true)} />
@@ -847,11 +923,13 @@ export default function App() {
         onToggleLang={() => setLang(lang === 'ja' ? 'en' : 'ja')}
         onAbout={() => setShowAbout(true)}
         onUpdates={() => setShowUpdates(true)}
+        onRanking={() => setShowRanking(true)}
       />
       {screen}
       <Footer />
       {showAbout && <About onClose={() => setShowAbout(false)} />}
       {showUpdates && <Updates onClose={() => setShowUpdates(false)} />}
+      {showNews && <RankingNews onClose={closeNews} onOpen={() => { closeNews(); setShowRanking(true) }} />}
     </LangContext.Provider>
   )
 }
