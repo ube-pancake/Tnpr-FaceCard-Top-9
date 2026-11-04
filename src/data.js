@@ -37,7 +37,7 @@ const roster = {
     'Houou Byodoin', 'Kazuya Tokugawa', 'Jujiro Oni', 'Kanata Irie', 'Shuji Tanegashima', 'Duke Watanabe', 'Ryoga Echizen',
     'Ryuji Omagari', 'Ikuto Kimijima', 'Atsukyo Tono', 'Tsukimitsu Ochi', 'Jusaburo Mori', 'Sotomichi Nakagauchi',
     'Yudai Yamato', 'Shinobu Miyako', 'Chikahiko Matsudaira', 'Shun Suzuki', 'Issa Washio', 'Akuto Mitsuya', 'Liliadent Krauser',
-    'Futa Kaji',
+    'Futa Kaji', 'Tetsuya Hara', 'Yoshiyuki Taira',
   ],
   // Players tennimu.com doesn't list were added from the anime site (tenipuri.jp/u17/worldcup).
   germany: ['Jurgen Borisovich Volk', 'Q.P.', 'Michael Bismarck', 'Elmar Siegfried', 'A. Frankensteiner', 'Dankmar Schneider', 'Belti B Volk'],
@@ -149,6 +149,8 @@ const japaneseNames = {
   'Akuto Mitsuya': '三津谷あくと',
   'Liliadent Krauser': 'リリアデント・クラウザー',
   'Futa Kaji': '加治 風多',
+  'Tetsuya Hara': '原哲也',
+  'Yoshiyuki Taira': '平善之',
   'Jurgen Borisovich Volk': 'ユルゲン・バリーサヴィチ・ボルク',
   'Q.P.': 'Q・P',
   'Michael Bismarck': 'ミハエル・ビスマルク',

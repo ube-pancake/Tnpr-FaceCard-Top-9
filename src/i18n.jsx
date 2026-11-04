@@ -55,6 +55,10 @@ const strings = {
     // Newest first. Dates are YYYY-MM-DD and shown in the page language.
     updatesList: [
       {
+        date: '2026-11-05',
+        items: ['New characters: Tetsuya Hara and Yoshiyuki Taira (U-17)'],
+      },
+      {
         date: '2026-11-01',
         items: ['New: the Global Ranking page, with the overall Top 20 as of November 1'],
       },
@@ -168,6 +172,10 @@ const strings = {
     updates: 'Updates',
     updatesTitle: '更新情報',
     updatesList: [
+      {
+        date: '2026-11-05',
+        items: ['新キャラクター：原哲也、平善之（U-17）'],
+      },
       {
         date: '2026-11-01',
         items: ['新ページ：11月1日時点の総合ランキングTOP20を公開'],
