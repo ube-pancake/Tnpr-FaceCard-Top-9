@@ -71,12 +71,15 @@ export const choose = (state, ids, side) => {
 
 // "Neither" removes both characters for good, so it's only allowed while enough are left to fill the
 // top list with real picks. Without this, a player who skips a lot ends with just a #1 and #2.
-export const canSkip = (state, ids) => {
+// Picks don't change the count: ranking someone uses up one character and fills one spot.
+export const skipsLeft = (state, ids) => {
   const target = Math.min(TOP_COUNT, ids.length)
   const rankedSet = new Set(state.ranked)
   const left = ids.filter((id) => !rankedSet.has(id) && !state.lostTo[id].includes(NOBODY)).length
-  return left - 2 >= target - state.ranked.length
+  return Math.max(0, Math.floor((left - (target - state.ranked.length)) / 2))
 }
+
+export const canSkip = (state, ids) => skipsLeft(state, ids) > 0
 
 export const chooseNeither = (state, ids) => {
   const [a, b] = currentPair(state)

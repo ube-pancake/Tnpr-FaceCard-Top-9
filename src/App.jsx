@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import QRCode from 'qrcode'
 import { activeSchools, players, schoolMap } from './data.js'
-import { TOP_COUNT, canSkip, choose, chooseNeither, currentPair, fillRanking, progress, startSort } from './sorter.js'
+import { TOP_COUNT, canSkip, choose, chooseNeither, currentPair, fillRanking, progress, skipsLeft, startSort } from './sorter.js'
 import { frameFor, layoutFor, toStyle } from './framing.js'
 import FrameEditor from './FrameEditor.jsx'
 import { fetchPlayCount, sendResult } from './results.js'
@@ -217,9 +217,35 @@ function SmallPoolWarning({ count, onStart, onClose }) {
   )
 }
 
+// Players who skip almost everyone end up picking their Top 9 from whoever is left, so warn them
+// once when a skip brings them down to this many.
+const LOW_SKIPS = 5
 const TAP_GUARD_MS = 400
 
-function Matchup({ state, history, count, teams, onPick, onNeither, canNeither, onBack, onHome }) {
+// The button takes focus so Enter or Space closes this instead of pressing Skip again behind it,
+// and taps are ignored briefly so the second tap of a quick double tap on Skip doesn't dismiss it unread.
+function SkipWarning({ count, onClose }) {
+  const { t } = useT()
+  const openedAt = useRef(performance.now())
+  const tapClose = () => { if (performance.now() - openedAt.current >= TAP_GUARD_MS) onClose() }
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+  return (
+    <div className="modal-backdrop" onClick={tapClose}>
+      <div className="modal" role="dialog" aria-modal="true" aria-label={t.skipWarnTitle(count)} onClick={(event) => event.stopPropagation()}>
+        <h2>{t.skipWarnTitle(count)}</h2>
+        <p>{t.skipWarnText(count)}</p>
+        <button className="primary" onClick={tapClose} autoFocus>{t.skipWarnOk}</button>
+      </div>
+    </div>
+  )
+}
+
+function Matchup({ state, history, count, teams, onPick, onNeither, skips, onBack, onHome }) {
+  const canNeither = skips > 0
   const { t, nameOf, altNameOf, teamName, teamsLabel } = useT()
   const pair = currentPair(state)
   // The estimate of picks left can rise when a new round starts or "Neither" brings earlier losers
@@ -278,7 +304,7 @@ function Matchup({ state, history, count, teams, onPick, onNeither, canNeither, 
           <span className="choice-hint">{t.neitherHint}</span> {t.neither}
         </button>
       </div>
-      {!canNeither && <p className="skip-off">{t.skipOff(Math.min(TOP_COUNT, count))}</p>}
+      {canNeither ? <p className="skips-left">{t.skipsLeft(skips)}</p> : <p className="skip-off">{t.skipOff(Math.min(TOP_COUNT, count))}</p>}
       <p className="keys">{t.keys}</p>
     </main>
   )
@@ -877,7 +903,24 @@ export default function App() {
   const restart = () => {
     setSaved(loadSaved())
     setSession(null)
+    setSkipWarning(null)
   }
+
+  // Shown when a new skip (not Back or Resume) leaves LOW_SKIPS or fewer. Teams that start with
+  // that few get it on their first skip instead.
+  const [skipWarning, setSkipWarning] = useState(null)
+  const seenSteps = useRef(0)
+  useEffect(() => {
+    const steps = history ? history.length : 0
+    const added = steps === seenSteps.current + 1
+    seenSteps.current = steps
+    if (!added || steps < 2 || state.done) return
+    const before = history[steps - 2]
+    const skippedBefore = (before.skipped || []).length
+    if ((state.skipped || []).length === skippedBefore) return
+    const left = skipsLeft(state, ids)
+    if (left <= LOW_SKIPS && (skipsLeft(before, ids) > LOW_SKIPS || !skippedBefore)) setSkipWarning(left)
+  }, [history])
 
   let screen
   if (showRanking) {
@@ -908,7 +951,7 @@ export default function App() {
         teams={session.teams}
         onPick={pick}
         onNeither={pickNeither}
-        canNeither={canSkip(state, ids)}
+        skips={skipsLeft(state, ids)}
         onBack={() => updateHistory((current) => current.slice(0, -1))}
         onHome={restart}
       />
@@ -930,6 +973,7 @@ export default function App() {
       {showAbout && <About onClose={() => setShowAbout(false)} />}
       {showUpdates && <Updates onClose={() => setShowUpdates(false)} />}
       {showNews && <RankingNews onClose={closeNews} onOpen={() => { closeNews(); setShowRanking(true) }} />}
+      {skipWarning !== null && state && !state.done && !showRanking && <SkipWarning count={skipWarning} onClose={() => setSkipWarning(null)} />}
     </LangContext.Provider>
   )
 }

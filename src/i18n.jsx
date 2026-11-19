@@ -20,6 +20,12 @@ const strings = {
     neitherHint: 'Like neither?',
     neither: 'Skip both ✕',
     skipOff: (n) => `Skipping is off now so your Top ${n} can be filled. Pick the face you like more.`,
+    skipsLeft: (n) => `Skips left: ${n}`,
+    skipWarnTitle: (n) => (n ? `Only ${n} skip${n === 1 ? '' : 's'} left` : 'No skips left'),
+    skipWarnText: (n) => (n
+      ? 'When your skips run out, you’ll have to choose from the faces that are left, even ones you aren’t interested in, so they can end up in your Top 9.'
+      : 'You’ve used all your skips, so from now on you’ll choose from the faces that are left, even ones you aren’t interested in, and they can end up in your Top 9.'),
+    skipWarnOk: 'Got it',
     smallPoolTitle: 'You selected fewer than 9 characters',
     smallPoolText: (n) => `Your selection only has ${n} characters, so your result will show ${n} faces instead of 9 and the grid will look uneven.`,
     smallPoolStart: 'Start anyway',
@@ -54,6 +60,10 @@ const strings = {
     updatesTitle: 'Updates',
     // Newest first. Dates are YYYY-MM-DD and shown in the page language.
     updatesList: [
+      {
+        date: '2026-11-19',
+        items: ['New: a “Skips left” counter under the Skip button, and a heads-up when only a few skips remain'],
+      },
       {
         date: '2026-11-05',
         items: ['New characters: Tetsuya Hara and Yoshiyuki Taira (U-17)'],
@@ -139,6 +149,12 @@ const strings = {
     neitherHint: 'どちらも違う？',
     neither: '両方スキップ ✕',
     skipOff: (n) => `TOP${n}を埋めるため、今はスキップできません。好きな方を選んでください。`,
+    skipsLeft: (n) => `あと${n}回スキップできます`,
+    skipWarnTitle: (n) => (n ? `残りのスキップは${n}回です` : 'スキップを使い切りました'),
+    skipWarnText: (n) => (n
+      ? 'スキップを使い切ると、残った人の中から選ぶことになるため、興味のない子もTOP9に入ることがあります。'
+      : 'スキップを使い切ったため、これからは残った人の中から選ぶことになり、興味のない子もTOP9に入ることがあります。'),
+    skipWarnOk: 'OK',
     smallPoolTitle: '選んだのが9人未満です',
     smallPoolText: (n) => `選んだチームには${n}人しかいないため、結果は9人ではなく${n}人になり、グリッドが不揃いになります。`,
     smallPoolStart: 'このまま始める',
@@ -172,6 +188,10 @@ const strings = {
     updates: 'Updates',
     updatesTitle: '更新情報',
     updatesList: [
+      {
+        date: '2026-11-19',
+        items: ['スキップボタンの下に残りのスキップ回数を表示し、残りわずかになるとお知らせを表示するように'],
+      },
       {
         date: '2026-11-05',
         items: ['新キャラクター：原哲也、平善之（U-17）'],

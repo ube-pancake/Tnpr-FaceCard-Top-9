@@ -105,7 +105,8 @@ html:not(.touch) .team:hover { background: var(--soft); }
 .choice.neither { display: flex; align-items: center; border: 2px solid var(--ink); background: var(--ink); color: var(--surface); }
 .choice-hint { margin-right: 8px; font-size: 12px; font-weight: 600; opacity: .75; }
 .choice.neither:disabled { opacity: .35; cursor: default; }
-.skip-off { max-width: 30em; margin: 10px auto 0; font-size: 13px; color: var(--muted); }
+.skip-off, .skips-left { max-width: 30em; margin: 10px auto 0; font-size: 13px; color: var(--muted); }
+.skips-left { font-weight: 700; }
 html:not(.touch) .choice.back:not(:disabled):hover { border-color: var(--violet); }
 html:not(.touch) .choice.neither:not(:disabled):hover { opacity: .85; }
 .choice:active:not(:disabled) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--violet) 30%, transparent); }
